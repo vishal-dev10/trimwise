@@ -1,9 +1,7 @@
 import { useState } from 'react';
-import { useAdminAuth } from '@/hooks/use-admin-auth';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import {
-  LayoutDashboard, Upload, History, LogOut, Menu, X, Shield,
+  LayoutDashboard, Upload, History, Menu, X, Shield,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -14,19 +12,16 @@ const navItems = [
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const { user, signOut } = useAdminAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-foreground/20 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={cn(
         "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card border-r border-border flex flex-col transition-transform lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -58,16 +53,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           ))}
         </nav>
-
-        <div className="p-3 border-t border-border">
-          <div className="text-xs text-muted-foreground mb-2 px-3 truncate">{user?.email}</div>
-          <Button variant="ghost" size="sm" className="w-full justify-start text-muted-foreground" onClick={signOut}>
-            <LogOut className="w-4 h-4 mr-2" /> Sign Out
-          </Button>
-        </div>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 border-b border-border flex items-center px-4 lg:px-6 bg-card/50 backdrop-blur-sm">
           <button className="lg:hidden mr-3 text-muted-foreground" onClick={() => setSidebarOpen(true)}>
