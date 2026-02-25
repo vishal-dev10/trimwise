@@ -1,22 +1,30 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, TrendingUp, Wrench, Shield, Zap, IndianRupee, Star, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Wrench, Shield, Zap, IndianRupee, Star, AlertTriangle, CheckCircle2, Brain, Activity, HeartPulse } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCars, useCarVariants, useVariantFeatures, useCityPricing, useDepreciation } from '@/hooks/use-cars';
-import { formatPrice, calculateTCO, calculateEMI } from '@/lib/mock-data';
+import { formatPrice, calculateTCO, calculateEMI, type OnboardingData } from '@/lib/mock-data';
 import TCOSimulator from '@/components/TCOSimulator';
+import {
+  calculateFeatureRegret,
+  calculateOwnershipStress,
+  calculateTrimScore,
+  stressLevelColor,
+  stressLevelBg,
+  regretLevelColor,
+  type FeatureRegretResult,
+} from '@/lib/intelligence-engine';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 
 interface VariantDeepDiveProps {
   carId: string;
   variantId: string;
   onBack: () => void;
-  dailyKm?: number;
-  ownershipYears?: number;
-  city?: string;
+  profile: OnboardingData;
 }
 
-const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYears = 5, city = 'Mumbai' }: VariantDeepDiveProps) => {
+const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveProps) => {
   const { data: cars } = useCars();
   const { data: variants } = useCarVariants(carId);
   const { data: features, isLoading: featuresLoading } = useVariantFeatures(variantId);
@@ -25,7 +33,42 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
 
   const car = cars?.find(c => c.id === carId);
   const variant = variants?.find(v => v.id === variantId);
-  const cityPrice = cityPricing?.find(cp => cp.city === city);
+  const cityPrice = cityPricing?.find(cp => cp.city === profile.city);
+
+  // Intelligence computations
+  const ownershipStress = useMemo(() => {
+    if (!features) return null;
+    return calculateOwnershipStress(features);
+  }, [features]);
+
+  const trimScore = useMemo(() => {
+    if (!variant || !variants || !features || !depreciation || !ownershipStress) return null;
+    return calculateTrimScore(variant, variants, features, depreciation, ownershipStress, profile);
+  }, [variant, variants, features, depreciation, ownershipStress, profile]);
+
+  // Regret risk for features that are MISSING from this variant
+  // We'd need all features to compare, but we can compute for existing ones
+  const featureRegrets = useMemo(() => {
+    if (!features) return [];
+    return features
+      .filter((vf: any) => vf.features)
+      .map((vf: any) => calculateFeatureRegret(
+        {
+          id: vf.feature_id,
+          name: vf.features.name,
+          category: vf.features.category,
+          practicality_score: vf.features.practicality_score,
+          repair_risk: vf.features.repair_risk,
+          insurance_impact: vf.features.insurance_impact,
+        },
+        {
+          usefulness_score: vf.usefulness_score,
+          resale_impact: vf.resale_impact,
+          incremental_cost: vf.incremental_cost,
+        },
+        profile
+      ));
+  }, [features, profile]);
 
   if (!variant) return null;
 
@@ -76,6 +119,9 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
           <TabsList className="w-full justify-start bg-secondary/50 rounded-xl p-1 mb-6 overflow-x-auto">
             <TabsTrigger value="overview" className="rounded-lg text-sm">Overview</TabsTrigger>
             <TabsTrigger value="features" className="rounded-lg text-sm">Features</TabsTrigger>
+            <TabsTrigger value="intelligence" className="rounded-lg text-sm">
+              <Brain className="w-3 h-3 mr-1" /> Intelligence
+            </TabsTrigger>
             <TabsTrigger value="tco" className="rounded-lg text-sm">TCO Simulator</TabsTrigger>
             <TabsTrigger value="resale" className="rounded-lg text-sm">Resale</TabsTrigger>
           </TabsList>
@@ -86,7 +132,7 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
               <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
                 <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
                   <IndianRupee className="w-4 h-4 text-primary" />
-                  On-Road Price Breakdown ({city})
+                  On-Road Price Breakdown ({profile.city})
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between">
@@ -119,6 +165,34 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
                   </div>
                 </div>
               </div>
+
+              {/* Intelligence Summary Cards */}
+              {(trimScore || ownershipStress) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {trimScore && (
+                    <div className="bg-primary/5 rounded-2xl p-4 border border-primary/20">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Brain className="w-4 h-4 text-primary" />
+                        <span className="text-xs text-muted-foreground">Trim Score</span>
+                      </div>
+                      <p className="text-3xl font-display font-bold text-primary">{trimScore.score}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1">out of 100</p>
+                    </div>
+                  )}
+                  {ownershipStress && (
+                    <div className={`${stressLevelBg(ownershipStress.level)} rounded-2xl p-4 border border-border/50`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <HeartPulse className={`w-4 h-4 ${stressLevelColor(ownershipStress.level)}`} />
+                        <span className="text-xs text-muted-foreground">Ownership Stress</span>
+                      </div>
+                      <p className={`text-3xl font-display font-bold capitalize ${stressLevelColor(ownershipStress.level)}`}>
+                        {ownershipStress.level}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1">score: {ownershipStress.score}/100</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* EMI Card */}
               <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
@@ -153,34 +227,194 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
 
           <TabsContent value="features">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-              {features && features.length > 0 ? features.map((vf: any, i: number) => (
-                <div key={vf.id} className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-bold text-foreground">{vf.features?.name}</h4>
-                      <p className="text-sm text-muted-foreground">{vf.features?.category}</p>
+              {features && features.length > 0 ? features.map((vf: any, i: number) => {
+                const regret = featureRegrets.find(r => r.featureId === vf.feature_id);
+                return (
+                  <div key={vf.id} className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h4 className="font-bold text-foreground">{vf.features?.name}</h4>
+                        <p className="text-sm text-muted-foreground">{vf.features?.category}</p>
+                      </div>
+                      <Badge variant="secondary" className="text-xs">+{formatPrice(vf.incremental_cost)}</Badge>
                     </div>
-                    <Badge variant="secondary" className="text-xs">+{formatPrice(vf.incremental_cost)}</Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">{vf.features?.plain_explanation}</p>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3 h-3 text-accent" />
-                      <span className="text-xs font-medium text-foreground">Usefulness: {vf.usefulness_score}/10</span>
+                    <p className="text-sm text-muted-foreground mb-3">{vf.features?.plain_explanation}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3 h-3 text-accent" />
+                        <span className="text-xs font-medium text-foreground">Usefulness: {vf.usefulness_score}/10</span>
+                      </div>
+                      <Badge className={`text-xs ${riskColor(vf.features?.repair_risk)}`}>
+                        <Wrench className="w-3 h-3 mr-1" />
+                        {vf.features?.repair_risk} repair risk
+                      </Badge>
+                      <span className={`text-xs font-medium ${resaleImpactColor(vf.resale_impact)}`}>
+                        {vf.resale_impact === 'positive' ? '↑' : vf.resale_impact === 'negative' ? '↓' : '→'} Resale: {vf.resale_impact}
+                      </span>
                     </div>
-                    <Badge className={`text-xs ${riskColor(vf.features?.repair_risk)}`}>
-                      <Wrench className="w-3 h-3 mr-1" />
-                      {vf.features?.repair_risk} repair risk
-                    </Badge>
-                    <span className={`text-xs font-medium ${resaleImpactColor(vf.resale_impact)}`}>
-                      {vf.resale_impact === 'positive' ? '↑' : vf.resale_impact === 'negative' ? '↓' : '→'} Resale: {vf.resale_impact}
-                    </span>
                   </div>
-                </div>
-              )) : (
+                );
+              }) : (
                 <div className="text-center py-12 text-muted-foreground">
                   <p>No additional features for this variant.</p>
                   <p className="text-sm mt-1">This is the base variant.</p>
+                </div>
+              )}
+            </motion.div>
+          </TabsContent>
+
+          {/* ─── INTELLIGENCE TAB ─── */}
+          <TabsContent value="intelligence">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+
+              {/* AI Decision Explainer */}
+              {trimScore && (
+                <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20">
+                  <div className="flex items-start gap-3">
+                    <Brain className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <h3 className="font-bold text-foreground mb-2">Decision Intelligence</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        Based on your {profile.dailyUsageKm}km daily driving in {profile.city} over {profile.ownershipYears} years,{' '}
+                        {trimScore.explanation}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Trim Score Breakdown */}
+              {trimScore && (
+                <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-primary" />
+                    Reliability-Weighted Trim Score
+                  </h3>
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="relative w-20 h-20">
+                      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                        <circle cx="18" cy="18" r="16" fill="none" stroke="hsl(var(--secondary))" strokeWidth="3" />
+                        <circle
+                          cx="18" cy="18" r="16" fill="none"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="3"
+                          strokeDasharray={`${trimScore.score} ${100 - trimScore.score}`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <span className="absolute inset-0 flex items-center justify-center text-lg font-display font-bold text-foreground">
+                        {trimScore.score}
+                      </span>
+                    </div>
+                    <div className="flex-1 text-sm text-muted-foreground">
+                      <p>Composite score factoring feature utility, resale strength, ownership cost, and reliability.</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {[
+                      { label: 'Feature Utility', value: trimScore.breakdown.featureUtility, positive: true },
+                      { label: 'Resale Strength', value: trimScore.breakdown.resaleStrength, positive: true },
+                      { label: 'Reliability Weight', value: trimScore.breakdown.reliabilityWeight, positive: true },
+                      { label: 'Cost Deviation', value: trimScore.breakdown.ownershipCostDeviation, positive: false },
+                      { label: 'Overpriced Penalty', value: trimScore.breakdown.overpricedPenalty, positive: false },
+                      { label: 'Stress Factor', value: trimScore.breakdown.stressFactor, positive: false },
+                    ].map(item => (
+                      <div key={item.label}>
+                        <div className="flex justify-between text-xs mb-1">
+                          <span className="text-muted-foreground">{item.label}</span>
+                          <span className={item.positive ? 'text-chart-positive' : 'text-destructive'}>
+                            {item.positive ? '+' : '−'}{item.value}
+                          </span>
+                        </div>
+                        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                          <motion.div
+                            className={`h-full rounded-full ${item.positive ? 'bg-chart-positive' : 'bg-destructive'}`}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, item.value)}%` }}
+                            transition={{ duration: 0.6, delay: 0.1 }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Ownership Stress */}
+              {ownershipStress && (
+                <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                    <HeartPulse className={`w-4 h-4 ${stressLevelColor(ownershipStress.level)}`} />
+                    Ownership Stress Index
+                  </h3>
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className={`px-4 py-2 rounded-xl ${stressLevelBg(ownershipStress.level)}`}>
+                      <span className={`text-2xl font-display font-bold capitalize ${stressLevelColor(ownershipStress.level)}`}>
+                        {ownershipStress.level}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <motion.div
+                          className={`h-full rounded-full ${
+                            ownershipStress.level === 'low' ? 'bg-chart-positive' :
+                            ownershipStress.level === 'moderate' ? 'bg-accent' : 'bg-destructive'
+                          }`}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${ownershipStress.score}%` }}
+                          transition={{ duration: 0.8 }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">{ownershipStress.score}/100</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    {ownershipStress.factors.map((f, i) => (
+                      <Collapsible key={i}>
+                        <CollapsibleTrigger className="w-full">
+                          <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors">
+                            <span className="text-sm font-medium text-foreground">{f.label}</span>
+                            <Badge variant="outline" className="text-xs">{f.contribution}%</Badge>
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <p className="text-xs text-muted-foreground px-3 py-2">{f.description}</p>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Feature Regret Indicators (for included features) */}
+              {featureRegrets.length > 0 && (
+                <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-accent" />
+                    Feature Relevance Analysis
+                  </h3>
+                  <p className="text-xs text-muted-foreground mb-4">
+                    How each feature aligns with your driving pattern and preferences.
+                  </p>
+                  <div className="space-y-2">
+                    {featureRegrets.map((r) => (
+                      <div key={r.featureId} className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/30">
+                        <div className="flex-1 min-w-0">
+                          <span className="text-sm font-medium text-foreground truncate block">{r.featureName}</span>
+                          <span className="text-[10px] text-muted-foreground capitalize">{r.category}</span>
+                        </div>
+                        <Badge className={`text-xs shrink-0 ml-2 ${
+                          r.regretLevel === 'low' ? 'bg-chart-positive/10 text-chart-positive border-chart-positive/20' :
+                          r.regretLevel === 'medium' ? 'bg-accent/10 text-accent border-accent/20' :
+                          'bg-destructive/10 text-destructive border-destructive/20'
+                        }`}>
+                          {r.regretLevel === 'low' ? '✓ Included' : `⚠ ${r.regretRiskPct}% regret risk`}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -190,7 +424,7 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
             <TCOSimulator
               variant={variant}
               depreciation={depreciation ?? []}
-              dailyKm={dailyKm}
+              dailyKm={profile.dailyUsageKm}
             />
           </TabsContent>
 
@@ -222,7 +456,6 @@ const VariantDeepDive = ({ carId, variantId, onBack, dailyKm = 30, ownershipYear
                     </div>
                   </div>
 
-                  {/* Recommendation */}
                   <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
