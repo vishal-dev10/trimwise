@@ -19,15 +19,19 @@ const AdminLogin = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const { error: authError } = await signIn(email, password);
-    if (authError) {
-      setError('Invalid credentials or insufficient privileges.');
+
+    try {
+      const { error: authError } = await signIn(email, password);
+
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+
+      navigate('/admin');
+    } finally {
       setLoading(false);
-      return;
     }
-    // The admin check happens in the guard, just navigate
-    navigate('/admin');
-    setLoading(false);
   };
 
   return (
