@@ -14,17 +14,49 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       cars: {
         Row: {
           body_type: string
           brand: string
           created_at: string
           description: string | null
+          engine_options: string | null
           fuel_type: string
           id: string
           image_url: string | null
           is_active: boolean
           model: string
+          segment: string | null
           updated_at: string
           year: number
         }
@@ -33,11 +65,13 @@ export type Database = {
           brand: string
           created_at?: string
           description?: string | null
+          engine_options?: string | null
           fuel_type?: string
           id?: string
           image_url?: string | null
           is_active?: boolean
           model: string
+          segment?: string | null
           updated_at?: string
           year: number
         }
@@ -46,11 +80,13 @@ export type Database = {
           brand?: string
           created_at?: string
           description?: string | null
+          engine_options?: string | null
           fuel_type?: string
           id?: string
           image_url?: string | null
           is_active?: boolean
           model?: string
+          segment?: string | null
           updated_at?: string
           year?: number
         }
@@ -96,6 +132,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dataset_versions: {
+        Row: {
+          created_at: string
+          entity_type: string
+          id: string
+          rows_added: number
+          rows_deleted: number
+          rows_updated: number
+          snapshot: Json | null
+          uploaded_by: string
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          entity_type: string
+          id?: string
+          rows_added?: number
+          rows_deleted?: number
+          rows_updated?: number
+          snapshot?: Json | null
+          uploaded_by: string
+          version_number?: number
+        }
+        Update: {
+          created_at?: string
+          entity_type?: string
+          id?: string
+          rows_added?: number
+          rows_deleted?: number
+          rows_updated?: number
+          snapshot?: Json | null
+          uploaded_by?: string
+          version_number?: number
+        }
+        Relationships: []
       }
       depreciation_models: {
         Row: {
