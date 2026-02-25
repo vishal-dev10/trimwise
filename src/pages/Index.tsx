@@ -29,6 +29,22 @@ const Index = () => {
     setView('deepdive');
   };
 
+  // Default profile for fallback
+  const defaultProfile: OnboardingData = {
+    budgetMin: 800000,
+    budgetMax: 2000000,
+    ownershipYears: 5,
+    city: 'Mumbai',
+    dailyUsageKm: 30,
+    highwayPct: 30,
+    drivingStyle: 'balanced',
+    familySize: 4,
+    techPreference: 'moderate',
+    futurePlans: 'keep',
+  };
+
+  const profile = onboardingData ?? defaultProfile;
+
   switch (view) {
     case 'splash':
       return <SplashScreen onGetStarted={() => setView('onboarding')} />;
@@ -47,8 +63,7 @@ const Index = () => {
           carId={selectedCarId}
           onBack={() => setView('cars')}
           onSelectVariant={handleSelectVariant}
-          dailyKm={onboardingData?.dailyUsageKm}
-          ownershipYears={onboardingData?.ownershipYears}
+          profile={profile}
         />
       );
     case 'deepdive':
@@ -57,9 +72,7 @@ const Index = () => {
           carId={selectedCarId}
           variantId={selectedVariantId}
           onBack={() => setView('variants')}
-          dailyKm={onboardingData?.dailyUsageKm}
-          ownershipYears={onboardingData?.ownershipYears}
-          city={onboardingData?.city}
+          profile={profile}
         />
       );
     default:
