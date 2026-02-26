@@ -6,6 +6,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCars, useCarVariants, useVariantFeatures, useCityPricing, useDepreciation } from '@/hooks/use-cars';
 import { formatPrice, calculateTCO, calculateEMI, type OnboardingData } from '@/lib/mock-data';
 import TCOSimulator from '@/components/TCOSimulator';
+import UpgradePathSimulator from '@/components/UpgradePathSimulator';
+import FinancialStretchMeter from '@/components/FinancialStretchMeter';
+import { loadFinancialProfile } from '@/lib/financial-engine';
 import {
   calculateFeatureRegret,
   calculateOwnershipStress,
@@ -70,6 +73,20 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
       ));
   }, [features, profile]);
 
+  const financialProfile = useMemo(() => loadFinancialProfile(), []);
+
+  // Find mid variant for upgrade path (variant closest to median price)
+  const midVariant = useMemo(() => {
+    if (!variants || variants.length < 2) return null;
+    const sorted = [...variants].sort((a, b) => a.ex_showroom_price - b.ex_showroom_price);
+    return sorted[Math.floor(sorted.length / 2)];
+  }, [variants]);
+
+  const topVariant = useMemo(() => {
+    if (!variants || variants.length < 2) return null;
+    return [...variants].sort((a, b) => b.ex_showroom_price - a.ex_showroom_price)[0];
+  }, [variants]);
+
   if (!variant) return null;
 
   const onRoad = cityPrice?.on_road_price ?? variant.ex_showroom_price * 1.15;
@@ -122,7 +139,8 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
             <TabsTrigger value="intelligence" className="rounded-lg text-sm">
               <Brain className="w-3 h-3 mr-1" /> Intelligence
             </TabsTrigger>
-            <TabsTrigger value="tco" className="rounded-lg text-sm">TCO Simulator</TabsTrigger>
+            <TabsTrigger value="tco" className="rounded-lg text-sm">TCO</TabsTrigger>
+            <TabsTrigger value="financial" className="rounded-lg text-sm">Financial</TabsTrigger>
             <TabsTrigger value="resale" className="rounded-lg text-sm">Resale</TabsTrigger>
           </TabsList>
 
@@ -426,6 +444,32 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
               depreciation={depreciation ?? []}
               dailyKm={profile.dailyUsageKm}
             />
+          </TabsContent>
+
+          <TabsContent value="financial">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+              {/* Financial Stretch Meter */}
+              {financialProfile && (
+                <FinancialStretchMeter onRoadPrice={onRoad} financial={financialProfile} />
+              )}
+              {!financialProfile && (
+                <div className="bg-secondary/30 rounded-2xl p-5 border border-border/50 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Add your financial details during onboarding to see the Financial Stress Meter here.
+                  </p>
+                </div>
+              )}
+
+              {/* Upgrade Path Simulator */}
+              {midVariant && topVariant && depreciation && midVariant.id !== topVariant.id && (
+                <UpgradePathSimulator
+                  topVariant={topVariant}
+                  midVariant={midVariant}
+                  depreciation={depreciation}
+                  dailyKm={profile.dailyUsageKm}
+                />
+              )}
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="resale">

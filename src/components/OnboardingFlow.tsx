@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Wallet, Clock, MapPin, Gauge, Users, Cpu, Rocket } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wallet, Clock, MapPin, Gauge, Users, Cpu, Rocket, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cities, type OnboardingData } from '@/lib/mock-data';
+import FinancialStretchForm from '@/components/FinancialStretchForm';
+import type { FinancialProfile } from '@/lib/financial-engine';
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
@@ -17,6 +19,7 @@ const steps = [
   { icon: MapPin, title: 'Your City', subtitle: 'Where will you register?' },
   { icon: Gauge, title: 'Daily Usage', subtitle: 'How much do you drive?' },
   { icon: Users, title: 'About You', subtitle: 'Help us personalize recommendations' },
+  { icon: CreditCard, title: 'Financial Fit', subtitle: 'Optional: Check affordability' },
 ];
 
 const OnboardingFlow = ({ onComplete, onBack }: OnboardingFlowProps) => {
@@ -200,6 +203,16 @@ const OnboardingFlow = ({ onComplete, onBack }: OnboardingFlowProps) => {
               </div>
             </div>
           </div>
+        );
+      case 5:
+        return (
+          <FinancialStretchForm
+            onComplete={(profile: FinancialProfile) => {
+              // Financial data saved to localStorage by the form itself
+              next();
+            }}
+            onSkip={() => next()}
+          />
         );
       default:
         return null;
