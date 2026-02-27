@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, TrendingUp, Wrench, Shield, Zap, IndianRupee, Star, AlertTriangle, CheckCircle2, Brain, Activity, HeartPulse } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Wrench, Shield, Zap, IndianRupee, Star, AlertTriangle, CheckCircle2, Brain, Activity, HeartPulse, BarChart3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCars, useCarVariants, useVariantFeatures, useCityPricing, useDepreciation } from '@/hooks/use-cars';
@@ -19,6 +19,8 @@ import {
   type FeatureRegretResult,
 } from '@/lib/intelligence-engine';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import FeatureUsageSimulator from '@/components/FeatureUsageSimulator';
+import VariantDeltaAnalyzer from '@/components/VariantDeltaAnalyzer';
 
 interface VariantDeepDiveProps {
   carId: string;
@@ -138,6 +140,9 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
             <TabsTrigger value="features" className="rounded-lg text-sm">Features</TabsTrigger>
             <TabsTrigger value="intelligence" className="rounded-lg text-sm">
               <Brain className="w-3 h-3 mr-1" /> Intelligence
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="rounded-lg text-sm">
+              <BarChart3 className="w-3 h-3 mr-1" /> Analytics
             </TabsTrigger>
             <TabsTrigger value="tco" className="rounded-lg text-sm">TCO</TabsTrigger>
             <TabsTrigger value="financial" className="rounded-lg text-sm">Financial</TabsTrigger>
@@ -434,6 +439,21 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                     ))}
                   </div>
                 </div>
+              )}
+            </motion.div>
+          </TabsContent>
+
+          {/* ─── ANALYTICS TAB ─── */}
+          <TabsContent value="analytics">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+              {/* Feature Usage Simulator */}
+              {features && features.length > 0 && (
+                <FeatureUsageSimulator features={features} profile={profile} />
+              )}
+
+              {/* Variant Delta Analyzer */}
+              {variants && variants.length >= 2 && (
+                <VariantDeltaAnalyzer variants={variants} />
               )}
             </motion.div>
           </TabsContent>
