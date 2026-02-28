@@ -2,6 +2,7 @@ import { useAdminStats } from '@/hooks/use-admin-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Car, Layers, Sparkles, MapPin, AlertTriangle, CheckCircle } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import AdminIntelligenceWidgets from './AdminIntelligenceWidgets';
 
 const COLORS = [
   'hsl(200, 80%, 50%)',
@@ -120,6 +121,9 @@ const AdminDashboard = () => {
           </Card>
         )}
       </div>
+
+      {/* Intelligence Widgets */}
+      <AdminIntelligenceWidgets />
     </div>
   );
 };
