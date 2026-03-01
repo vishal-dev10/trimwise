@@ -21,6 +21,7 @@ import {
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
 import FeatureUsageSimulator from '@/components/FeatureUsageSimulator';
 import VariantDeltaAnalyzer from '@/components/VariantDeltaAnalyzer';
+import AIDecisionExplainer from '@/components/AIDecisionExplainer';
 
 interface VariantDeepDiveProps {
   carId: string;
@@ -291,20 +292,16 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
 
               {/* AI Decision Explainer */}
-              {trimScore && (
-                <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20">
-                  <div className="flex items-start gap-3">
-                    <Brain className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <h3 className="font-bold text-foreground mb-2">Decision Intelligence</h3>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        Based on your {profile.dailyUsageKm}km daily driving in {profile.city} over {profile.ownershipYears} years,{' '}
-                        {trimScore.explanation}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+              <AIDecisionExplainer
+                variant={variant}
+                carBrand={car?.brand ?? ''}
+                carModel={car?.model ?? ''}
+                profile={profile}
+                trimScore={trimScore}
+                ownershipStress={ownershipStress}
+                featureRegrets={featureRegrets}
+                variantCount={variants?.length ?? 0}
+              />
 
               {/* Trim Score Breakdown */}
               {trimScore && (
