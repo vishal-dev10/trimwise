@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronLeft, Star, TrendingUp, Gauge, Zap, Shield, Brain, HeartPulse } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, Star, TrendingUp, Gauge, Zap, Shield, Brain, HeartPulse, ArrowLeftRight, Check } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCars, useCarVariants, useVariantFeatures, useDepreciation } from '@/hooks/use-cars';
 import { formatPrice, calculateTCO, calculateEMI, type OnboardingData } from '@/lib/mock-data';
@@ -12,6 +12,7 @@ import {
   stressLevelColor,
   stressLevelBg,
 } from '@/lib/intelligence-engine';
+import SideBySideExplainer from '@/components/SideBySideExplainer';
 
 interface VariantComparisonProps {
   carId: string;
@@ -30,6 +31,9 @@ const VariantCard = ({
   isRecommended,
   recommendedIdx,
   onSelect,
+  compareMode,
+  isSelected,
+  onToggleCompare,
 }: {
   variant: any;
   allVariants: any[];
@@ -39,6 +43,9 @@ const VariantCard = ({
   isRecommended: boolean;
   recommendedIdx: number;
   onSelect: () => void;
+  compareMode: boolean;
+  isSelected: boolean;
+  onToggleCompare: () => void;
 }) => {
   const { data: features } = useVariantFeatures(variant.id);
   const resaleAt = depreciation?.find(d => d.year_number === profile.ownershipYears);
@@ -64,17 +71,35 @@ const VariantCard = ({
   const emi = calculateEMI(onRoad * 0.8);
   const resalePct = resaleAt?.resale_value_pct ?? 50;
 
+  const handleClick = () => {
+    if (compareMode) {
+      onToggleCompare();
+    } else {
+      onSelect();
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08 }}
-      className={`bg-card rounded-2xl p-5 card-shadow border transition-all cursor-pointer hover:card-shadow-hover ${
-        isRecommended ? 'border-primary/50 ring-1 ring-primary/20' : 'border-border/50'
+      className={`bg-card rounded-2xl p-5 card-shadow border transition-all cursor-pointer hover:card-shadow-hover relative ${
+        isRecommended && !compareMode ? 'border-primary/50 ring-1 ring-primary/20' : 
+        isSelected ? 'border-primary/50 ring-2 ring-primary/30' : 'border-border/50'
       }`}
-      onClick={onSelect}
+      onClick={handleClick}
     >
-      {isRecommended && (
+      {/* Compare selection indicator */}
+      {compareMode && (
+        <div className={`absolute top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+          isSelected ? 'bg-primary border-primary' : 'border-muted-foreground/30 bg-background'
+        }`}>
+          {isSelected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
+        </div>
+      )}
+
+      {isRecommended && !compareMode && (
         <Badge className="mb-3 bg-primary/10 text-primary border-primary/20 text-xs">
           <Star className="w-3 h-3 mr-1" /> Recommended
         </Badge>
@@ -153,8 +178,28 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
   const { data: variants, isLoading } = useCarVariants(carId);
   const { data: depreciation } = useDepreciation(carId);
 
+  const [compareMode, setCompareMode] = useState(false);
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+
   const car = cars?.find(c => c.id === carId);
   const recommendedIdx = Math.min(2, (variants?.length ?? 1) - 1);
+
+  const toggleCompareId = (id: string) => {
+    setCompareIds(prev => {
+      if (prev.includes(id)) return prev.filter(x => x !== id);
+      if (prev.length >= 2) return [prev[1], id]; // replace oldest
+      return [...prev, id];
+    });
+  };
+
+  const compareVariants = useMemo(() => {
+    if (compareIds.length !== 2 || !variants) return null;
+    const a = variants.find(v => v.id === compareIds[0]);
+    const b = variants.find(v => v.id === compareIds[1]);
+    return a && b ? [a, b] as const : null;
+  }, [compareIds, variants]);
+
+  const showComparison = compareMode && compareVariants;
 
   return (
     <div className="min-h-screen bg-background">
@@ -166,15 +211,81 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
             All Cars
           </button>
           {car && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{car.brand}</p>
-              <h1 className="text-2xl font-bold text-foreground">{car.model} — Compare Variants</h1>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{car.brand}</p>
+                <h1 className="text-2xl font-bold text-foreground">{car.model} — Compare Variants</h1>
+              </div>
+              {variants && variants.length >= 2 && (
+                <button
+                  onClick={() => {
+                    setCompareMode(!compareMode);
+                    if (compareMode) setCompareIds([]);
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    compareMode
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary/80 text-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <ArrowLeftRight className="w-3.5 h-3.5" />
+                  {compareMode ? 'Comparing' : 'Compare'}
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Compare mode instructions */}
+        <AnimatePresence>
+          {compareMode && !showComparison && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-4"
+            >
+              <div className="bg-primary/5 rounded-xl p-3 border border-primary/20 flex items-center gap-2">
+                <ArrowLeftRight className="w-4 h-4 text-primary shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  Select <strong className="text-foreground">2 variants</strong> to compare their Decision Intelligence side by side.
+                  {compareIds.length > 0 && <span className="text-primary ml-1">({compareIds.length}/2 selected)</span>}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Side-by-side view */}
+        <AnimatePresence mode="wait">
+          {showComparison && (
+            <motion.div
+              key="comparison"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-6"
+            >
+              <SideBySideExplainer
+                variantA={compareVariants[0]}
+                variantB={compareVariants[1]}
+                allVariants={variants!}
+                depreciation={depreciation}
+                profile={profile}
+                carBrand={car?.brand ?? ''}
+                carModel={car?.model ?? ''}
+                onClose={() => {
+                  setCompareMode(false);
+                  setCompareIds([]);
+                }}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Variant cards */}
         {isLoading ? (
           <div className="space-y-4">
             {[1,2,3].map(i => <Skeleton key={i} className="h-52 rounded-2xl" />)}
@@ -192,6 +303,9 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
                 isRecommended={i === recommendedIdx}
                 recommendedIdx={recommendedIdx}
                 onSelect={() => onSelectVariant(variant.id)}
+                compareMode={compareMode}
+                isSelected={compareIds.includes(variant.id)}
+                onToggleCompare={() => toggleCompareId(variant.id)}
               />
             ))}
           </div>

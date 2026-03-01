@@ -6,7 +6,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/
 import type { OnboardingData } from '@/lib/mock-data';
 import type { TrimScoreResult, OwnershipStressResult, FeatureRegretResult } from '@/lib/intelligence-engine';
 
-interface AIDecisionExplainerProps {
+export interface AIDecisionExplainerProps {
   variant: {
     name: string;
     ex_showroom_price: number;
@@ -19,10 +19,10 @@ interface AIDecisionExplainerProps {
   ownershipStress: OwnershipStressResult | null;
   featureRegrets: FeatureRegretResult[];
   variantCount: number;
+  compact?: boolean;
 }
 
-// ─── Template-driven reasoning engine ─────────────────────
-interface ReasoningBlock {
+export interface ReasoningBlock {
   icon: React.ElementType;
   title: string;
   verdict: 'positive' | 'caution' | 'warning';
@@ -30,7 +30,7 @@ interface ReasoningBlock {
   detail: string;
 }
 
-function generateReasoningBlocks(
+export function generateReasoningBlocks(
   props: AIDecisionExplainerProps
 ): ReasoningBlock[] {
   const { variant, profile, trimScore, ownershipStress, featureRegrets } = props;
@@ -137,8 +137,7 @@ function generateReasoningBlocks(
   return blocks;
 }
 
-// ─── Personalized recommendation generator ────────────────
-function generateRecommendation(props: AIDecisionExplainerProps): {
+export function generateRecommendation(props: AIDecisionExplainerProps): {
   verdict: 'strong-buy' | 'good-fit' | 'consider-alternatives' | 'caution';
   headline: string;
   reasoning: string;
@@ -182,14 +181,14 @@ function generateRecommendation(props: AIDecisionExplainerProps): {
   }
 }
 
-const verdictConfig = {
+export const verdictConfig = {
   'strong-buy': { color: 'text-chart-positive', bg: 'bg-chart-positive/10', border: 'border-chart-positive/20', icon: CheckCircle2, label: 'Strong Match' },
   'good-fit': { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', icon: TrendingUp, label: 'Good Fit' },
   'consider-alternatives': { color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/20', icon: Lightbulb, label: 'Consider Alternatives' },
   'caution': { color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20', icon: AlertTriangle, label: 'Proceed with Caution' },
 };
 
-const blockVerdictStyles = {
+export const blockVerdictStyles = {
   positive: { color: 'text-chart-positive', bg: 'bg-chart-positive/10', border: 'border-chart-positive/20' },
   caution: { color: 'text-accent', bg: 'bg-accent/10', border: 'border-accent/20' },
   warning: { color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' },
