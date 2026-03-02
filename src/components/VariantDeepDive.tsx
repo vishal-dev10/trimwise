@@ -22,6 +22,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import FeatureUsageSimulator from '@/components/FeatureUsageSimulator';
 import VariantDeltaAnalyzer from '@/components/VariantDeltaAnalyzer';
 import AIDecisionExplainer from '@/components/AIDecisionExplainer';
+import ChatAdvisor from '@/components/ChatAdvisor';
 
 interface VariantDeepDiveProps {
   carId: string;
@@ -538,6 +539,16 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* AI Chat Advisor */}
+      <ChatAdvisor
+        variant={variant}
+        car={car ? { brand: car.brand, model: car.model, fuel_type: car.fuel_type, body_type: car.body_type } : undefined}
+        profile={profile}
+        trimScore={trimScore?.score ?? null}
+        stressLevel={ownershipStress?.level ?? null}
+        featureCount={features?.length ?? 0}
+      />
     </div>
   );
 };
