@@ -1,1 +1,4 @@
 project_id = "fhhlwklfbxuzjyggmkmh"
+
+[functions.car-advisor]
+verify_jwt = false

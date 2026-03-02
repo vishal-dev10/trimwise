@@ -13,6 +13,7 @@ import {
   stressLevelBg,
 } from '@/lib/intelligence-engine';
 import SideBySideExplainer from '@/components/SideBySideExplainer';
+import ChatAdvisor from '@/components/ChatAdvisor';
 
 interface VariantComparisonProps {
   carId: string;
@@ -311,6 +312,12 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
           </div>
         )}
       </div>
+
+      {/* AI Chat Advisor */}
+      <ChatAdvisor
+        car={car ? { brand: car.brand, model: car.model, fuel_type: car.fuel_type, body_type: car.body_type } : undefined}
+        profile={profile}
+      />
     </div>
   );
 };
