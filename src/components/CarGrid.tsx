@@ -73,6 +73,15 @@ const CarGrid = ({ onSelectCar }: CarGridProps) => {
                   onClick={() => onSelectCar(car.id)}
                   className="bg-card rounded-2xl p-5 card-shadow hover:card-shadow-hover transition-all duration-300 text-left group border border-border/50"
                 >
+                  {(() => {
+                    const imgKey = `${car.brand} ${car.model}`.toLowerCase();
+                    const imgSrc = car.image_url || carImageMap[imgKey];
+                    return imgSrc ? (
+                      <div className="w-full h-36 rounded-xl overflow-hidden mb-4 bg-muted/30">
+                        <img src={imgSrc} alt={`${car.brand} ${car.model}`} className="w-full h-full object-cover object-center" />
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{car.brand}</p>
