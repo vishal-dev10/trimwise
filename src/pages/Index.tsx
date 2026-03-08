@@ -91,10 +91,15 @@ const Index = () => {
     return (
       <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
         {view !== 'onboarding' && (
-          <Button variant="outline" size="sm" className="h-8 rounded-full text-xs" onClick={handleResetPreferences}>
-            <RotateCcw className="w-3.5 h-3.5 mr-1" />
-            Reset Preferences
-          </Button>
+          <>
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => navigate('/shortlist')}>
+              <Heart className="w-3.5 h-3.5" />
+            </Button>
+            <Button variant="outline" size="sm" className="h-8 rounded-full text-xs" onClick={handleResetPreferences}>
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              Reset
+            </Button>
+          </>
         )}
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs text-muted-foreground">
           <User className="w-3.5 h-3.5" />
