@@ -9,7 +9,8 @@ import VariantDeepDive from '@/components/VariantDeepDive';
 import AuthPage from '@/pages/AuthPage';
 import type { OnboardingData } from '@/lib/mock-data';
 import { Button } from '@/components/ui/button';
-import { LogOut, User, RotateCcw } from 'lucide-react';
+import { LogOut, User, RotateCcw, Heart } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type View = 'splash' | 'onboarding' | 'cars' | 'variants' | 'deepdive';
 
