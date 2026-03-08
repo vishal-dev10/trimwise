@@ -222,7 +222,7 @@ const OnboardingFlow = ({ onComplete, onBack }: OnboardingFlowProps) => {
   const StepIcon = steps[step].icon;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       {/* Progress bar */}
       <div className="h-1 bg-muted">
         <motion.div
@@ -268,7 +268,7 @@ const OnboardingFlow = ({ onComplete, onBack }: OnboardingFlowProps) => {
       </div>
 
       {/* Footer */}
-      <div className="p-6 border-t border-border max-w-lg mx-auto w-full">
+      <div className="p-6 pb-safe border-t border-border max-w-lg mx-auto w-full">
         <Button onClick={next} className="w-full h-14 text-lg rounded-xl gap-2 font-semibold">
           {step === steps.length - 1 ? 'Find My Car' : 'Continue'}
           <ChevronRight className="w-5 h-5" />

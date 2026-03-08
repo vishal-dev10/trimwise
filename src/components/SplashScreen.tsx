@@ -8,7 +8,7 @@ interface SplashScreenProps {
 
 const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
   return (
-    <div className="min-h-screen bg-hero-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-hero-gradient flex flex-col items-center justify-center p-6 pb-safe relative overflow-hidden">
       {/* Subtle grid overlay */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: 'linear-gradient(hsl(200 80% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(200 80% 60%) 1px, transparent 1px)',
@@ -25,7 +25,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-primary/30 bg-primary/10"
+          className="inline-flex items-center gap-2 mb-4 md:mb-8 px-4 py-2 rounded-full border border-primary/30 bg-primary/10"
         >
           <Car className="w-5 h-5 text-primary" />
           <span className="text-sm font-medium text-primary">TrimWise</span>
@@ -35,7 +35,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-4xl md:text-6xl font-bold text-primary-foreground mb-6 leading-tight tracking-tight"
+          className="text-3xl md:text-6xl font-bold text-primary-foreground mb-4 md:mb-6 leading-tight tracking-tight"
         >
           Choose Your Car
           <br />
@@ -46,7 +46,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-lg md:text-xl text-primary-foreground/60 mb-10 leading-relaxed"
+          className="text-lg md:text-xl text-primary-foreground/60 mb-6 md:mb-10 leading-relaxed"
         >
           Stop guessing, start deciding. Compare trims, understand features, and know the true cost of owning your next car.
         </motion.p>
@@ -59,7 +59,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           <Button
             onClick={onGetStarted}
             size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-6 text-lg rounded-xl gap-2 font-semibold"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-5 md:py-6 text-lg rounded-xl gap-2 font-semibold"
           >
             Get Started
             <ChevronRight className="w-5 h-5" />
@@ -70,7 +70,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1 }}
-          className="mt-12 flex items-center justify-center gap-8 text-primary-foreground/40 text-sm"
+          className="mt-6 md:mt-12 flex items-center justify-center flex-wrap gap-3 md:gap-8 text-primary-foreground/40 text-sm"
         >
           <span>Trim Optimizer</span>
           <span className="w-1 h-1 rounded-full bg-primary/40" />
