@@ -79,10 +79,22 @@ const Index = () => {
     return <AuthPage />;
   }
 
+  const handleResetPreferences = () => {
+    setOnboardingData(null);
+    setHasCheckedProfile(false);
+    setView('onboarding');
+  };
+
   const UserBar = () => {
     if (!user || view === 'splash') return null;
     return (
       <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
+        {view !== 'onboarding' && (
+          <Button variant="outline" size="sm" className="h-8 rounded-full text-xs" onClick={handleResetPreferences}>
+            <RotateCcw className="w-3.5 h-3.5 mr-1" />
+            Reset Preferences
+          </Button>
+        )}
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs text-muted-foreground">
           <User className="w-3.5 h-3.5" />
           <span className="max-w-[120px] truncate">{user.email}</span>
