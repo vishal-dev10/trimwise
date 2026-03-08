@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Upload, History, Menu, X, Shield, BookOpen,
+  LayoutDashboard, Upload, History, Menu, X, Shield, BookOpen, ArrowLeft, LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 const navItems = [
   { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -16,6 +17,7 @@ const navItems = [
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { signOut } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -55,6 +57,24 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             </button>
           ))}
         </nav>
+
+        {/* Footer with Back to App + Sign Out */}
+        <div className="p-3 border-t border-border space-y-1">
+          <button
+            onClick={() => navigate('/')}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to App
+          </button>
+          <button
+            onClick={() => signOut()}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Sign Out
+          </button>
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
