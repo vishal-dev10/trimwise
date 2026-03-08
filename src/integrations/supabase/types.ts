@@ -237,6 +237,35 @@ export type Database = {
         }
         Relationships: []
       }
+      shortlist: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          variant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          variant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          variant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shortlist_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "variants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           budget_max: number | null
