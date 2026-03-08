@@ -25,7 +25,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full border border-primary/30 bg-primary/10"
+          className="inline-flex items-center gap-2 mb-4 md:mb-8 px-4 py-2 rounded-full border border-primary/30 bg-primary/10"
         >
           <Car className="w-5 h-5 text-primary" />
           <span className="text-sm font-medium text-primary">TrimWise</span>
