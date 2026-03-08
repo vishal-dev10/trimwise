@@ -10,6 +10,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminDataPage from "./pages/AdminDataPage";
 import AdminVersionsPage from "./pages/AdminVersionsPage";
+import ShortlistPage from "./pages/ShortlistPage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/data" element={<AdminDataPage />} />
           <Route path="/admin/versions" element={<AdminVersionsPage />} />
+          <Route path="/shortlist" element={<ShortlistPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

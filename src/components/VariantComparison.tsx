@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Star, TrendingUp, Gauge, Zap, Shield, Brain, HeartPulse, ArrowLeftRight, Check } from 'lucide-react';
+import { ChevronLeft, Star, TrendingUp, Gauge, Zap, Shield, Brain, HeartPulse, ArrowLeftRight, Check, Heart } from 'lucide-react';
+import { useShortlist } from '@/hooks/use-shortlist';
 import { Badge } from '@/components/ui/badge';
 import { useCars, useCarVariants, useVariantFeatures, useDepreciation } from '@/hooks/use-cars';
 import { formatPrice, calculateTCO, calculateEMI, type OnboardingData } from '@/lib/mock-data';
@@ -35,6 +36,8 @@ const VariantCard = ({
   compareMode,
   isSelected,
   onToggleCompare,
+  isShortlisted,
+  onToggleShortlist,
 }: {
   variant: any;
   allVariants: any[];
@@ -47,6 +50,8 @@ const VariantCard = ({
   compareMode: boolean;
   isSelected: boolean;
   onToggleCompare: () => void;
+  isShortlisted: boolean;
+  onToggleShortlist: () => void;
 }) => {
   const { data: features } = useVariantFeatures(variant.id);
   const resaleAt = depreciation?.find(d => d.year_number === profile.ownershipYears);
@@ -91,6 +96,16 @@ const VariantCard = ({
       }`}
       onClick={handleClick}
     >
+      {/* Shortlist heart button */}
+      {!compareMode && (
+        <button
+          className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary/80 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onToggleShortlist(); }}
+        >
+          <Heart className={`w-5 h-5 transition-colors ${isShortlisted ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+        </button>
+      )}
+
       {/* Compare selection indicator */}
       {compareMode && (
         <div className={`absolute top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
@@ -178,6 +193,7 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
   const { data: cars } = useCars();
   const { data: variants, isLoading } = useCarVariants(carId);
   const { data: depreciation } = useDepreciation(carId);
+  const { shortlistedVariantIds, toggleShortlist } = useShortlist();
 
   const [compareMode, setCompareMode] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
@@ -307,6 +323,8 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
                 compareMode={compareMode}
                 isSelected={compareIds.includes(variant.id)}
                 onToggleCompare={() => toggleCompareId(variant.id)}
+                isShortlisted={shortlistedVariantIds.has(variant.id)}
+                onToggleShortlist={() => toggleShortlist(variant.id)}
               />
             ))}
           </div>
