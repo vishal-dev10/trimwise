@@ -8,7 +8,7 @@ interface SplashScreenProps {
 
 const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
   return (
-    <div className="min-h-screen bg-hero-gradient flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-hero-gradient flex flex-col items-center justify-center p-6 pb-safe relative overflow-hidden">
       {/* Subtle grid overlay */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
         backgroundImage: 'linear-gradient(hsl(200 80% 60%) 1px, transparent 1px), linear-gradient(90deg, hsl(200 80% 60%) 1px, transparent 1px)',
