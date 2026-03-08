@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 type View = 'splash' | 'onboarding' | 'cars' | 'variants' | 'deepdive';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { profile: savedProfile, isLoading: profileLoading, saveProfile } = useUserProfile();
   const [view, setView] = useState<View>('splash');
