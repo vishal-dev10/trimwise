@@ -222,7 +222,7 @@ const OnboardingFlow = ({ onComplete, onBack }: OnboardingFlowProps) => {
   const StepIcon = steps[step].icon;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-[100dvh] bg-background flex flex-col">
       {/* Progress bar */}
       <div className="h-1 bg-muted">
         <motion.div
