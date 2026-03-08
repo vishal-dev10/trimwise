@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Car, Mail, Lock, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/hooks/use-auth';
+import { useUserRole } from '@/hooks/use-user-role';
+import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
@@ -14,7 +16,19 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const { signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { user, signIn, signUp, signInWithGoogle, resetPassword } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
+  const navigate = useNavigate();
+
+  // Redirect after login based on role
+  useEffect(() => {
+    if (!user || roleLoading) return;
+    if (isAdmin) {
+      navigate('/admin', { replace: true });
+    } else {
+      navigate('/', { replace: true });
+    }
+  }, [user, isAdmin, roleLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +66,15 @@ const AuthPage = () => {
       setSubmitting(false);
     }
   };
+
+  // If already logged in, show loading while redirect happens
+  if (user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">

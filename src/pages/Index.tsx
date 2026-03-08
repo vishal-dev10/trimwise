@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useUserRole } from '@/hooks/use-user-role';
 import { useUserProfile } from '@/hooks/use-user-profile';
 import SplashScreen from '@/components/SplashScreen';
 import OnboardingFlow from '@/components/OnboardingFlow';
@@ -17,6 +18,7 @@ type View = 'splash' | 'onboarding' | 'cars' | 'variants' | 'deepdive';
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const { profile: savedProfile, isLoading: profileLoading, saveProfile } = useUserProfile();
   const [view, setView] = useState<View>('splash');
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
@@ -24,20 +26,26 @@ const Index = () => {
   const [selectedVariantId, setSelectedVariantId] = useState<string>('');
   const [hasCheckedProfile, setHasCheckedProfile] = useState(false);
 
+  // Redirect admin users to /admin
+  useEffect(() => {
+    if (!roleLoading && isAdmin) {
+      navigate('/admin', { replace: true });
+    }
+  }, [roleLoading, isAdmin, navigate]);
+
   // When user is logged in and profile loads, auto-skip onboarding
   useEffect(() => {
-    if (!user || profileLoading || hasCheckedProfile) return;
+    if (!user || profileLoading || hasCheckedProfile || isAdmin) return;
     setHasCheckedProfile(true);
     if (savedProfile) {
       setOnboardingData(savedProfile);
       setView('cars');
     }
-  }, [user, profileLoading, savedProfile, hasCheckedProfile]);
+  }, [user, profileLoading, savedProfile, hasCheckedProfile, isAdmin]);
 
   const handleOnboardingComplete = async (data: OnboardingData) => {
     setOnboardingData(data);
     setView('cars');
-    // Persist to DB in background
     if (user) {
       try { await saveProfile(data); } catch { /* silent */ }
     }
@@ -68,13 +76,16 @@ const Index = () => {
 
   const profile = onboardingData ?? defaultProfile;
 
-  if (authLoading || (user && profileLoading && !hasCheckedProfile)) {
+  if (authLoading || roleLoading || (user && profileLoading && !hasCheckedProfile)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
+
+  // If admin, don't render anything (redirect is happening)
+  if (isAdmin) return null;
 
   // Show auth if not logged in and past splash
   if (!user && view !== 'splash') {
