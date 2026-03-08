@@ -46,7 +46,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="text-lg md:text-xl text-primary-foreground/60 mb-10 leading-relaxed"
+          className="text-lg md:text-xl text-primary-foreground/60 mb-6 md:mb-10 leading-relaxed"
         >
           Stop guessing, start deciding. Compare trims, understand features, and know the true cost of owning your next car.
         </motion.p>
