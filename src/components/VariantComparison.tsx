@@ -193,6 +193,7 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
   const { data: cars } = useCars();
   const { data: variants, isLoading } = useCarVariants(carId);
   const { data: depreciation } = useDepreciation(carId);
+  const { shortlistedVariantIds, toggleShortlist } = useShortlist();
 
   const [compareMode, setCompareMode] = useState(false);
   const [compareIds, setCompareIds] = useState<string[]>([]);
