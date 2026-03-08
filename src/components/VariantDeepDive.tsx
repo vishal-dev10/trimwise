@@ -22,6 +22,9 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import FeatureUsageSimulator from '@/components/FeatureUsageSimulator';
 import VariantDeltaAnalyzer from '@/components/VariantDeltaAnalyzer';
 import AIDecisionExplainer from '@/components/AIDecisionExplainer';
+import AIFeatureWorth from '@/components/AIFeatureWorth';
+import AIOwnershipStory from '@/components/AIOwnershipStory';
+import AINegotiationTips from '@/components/AINegotiationTips';
 import ChatAdvisor from '@/components/ChatAdvisor';
 
 interface VariantDeepDiveProps {
