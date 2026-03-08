@@ -11,6 +11,8 @@ import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminDataPage from "./pages/AdminDataPage";
 import AdminVersionsPage from "./pages/AdminVersionsPage";
 import ShortlistPage from "./pages/ShortlistPage";
+import UserManualPage from "./pages/UserManualPage";
+import AdminManualPage from "./pages/AdminManualPage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/admin/data" element={<AdminDataPage />} />
           <Route path="/admin/versions" element={<AdminVersionsPage />} />
           <Route path="/shortlist" element={<ShortlistPage />} />
+          <Route path="/manual/user" element={<UserManualPage />} />
+          <Route path="/manual/admin" element={<AdminManualPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
