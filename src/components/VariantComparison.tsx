@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Star, TrendingUp, Gauge, Zap, Shield, Brain, HeartPulse, ArrowLeftRight, Check } from 'lucide-react';
+import { ChevronLeft, Star, TrendingUp, Gauge, Zap, Shield, Brain, HeartPulse, ArrowLeftRight, Check, Heart } from 'lucide-react';
+import { useShortlist } from '@/hooks/use-shortlist';
 import { Badge } from '@/components/ui/badge';
 import { useCars, useCarVariants, useVariantFeatures, useDepreciation } from '@/hooks/use-cars';
 import { formatPrice, calculateTCO, calculateEMI, type OnboardingData } from '@/lib/mock-data';

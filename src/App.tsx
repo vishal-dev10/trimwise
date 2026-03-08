@@ -10,6 +10,7 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import AdminDataPage from "./pages/AdminDataPage";
 import AdminVersionsPage from "./pages/AdminVersionsPage";
+import ShortlistPage from "./pages/ShortlistPage";
 
 const queryClient = new QueryClient();
 
