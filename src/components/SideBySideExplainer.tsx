@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, ArrowLeftRight, IndianRupee, ChevronRight } from 'lucide-react';
+import { Brain, ArrowLeftRight, Sparkles, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import ReactMarkdown from 'react-markdown';
 import { useVariantFeatures } from '@/hooks/use-cars';
 import { formatPrice, type OnboardingData } from '@/lib/mock-data';
 import {
@@ -19,6 +21,7 @@ import {
   type AIDecisionExplainerProps,
   type ReasoningBlock,
 } from '@/components/AIDecisionExplainer';
+import { useAINarrative } from '@/hooks/use-ai-narrative';
 
 interface SideBySideExplainerProps {
   variantA: any;
@@ -171,6 +174,23 @@ const VariantColumn = ({
   );
 };
 
+// Extract computed data for AI comparison
+const useVariantIntelligence = (variant: any, allVariants: any[], depreciation: any[] | undefined, profile: OnboardingData) => {
+  const { data: features } = useVariantFeatures(variant.id);
+
+  const ownershipStress = useMemo(() => {
+    if (!features) return null;
+    return calculateOwnershipStress(features);
+  }, [features]);
+
+  const trimScore = useMemo(() => {
+    if (!variant || !allVariants || !features || !depreciation || !ownershipStress) return null;
+    return calculateTrimScore(variant, allVariants, features, depreciation, ownershipStress, profile);
+  }, [variant, allVariants, features, depreciation, ownershipStress, profile]);
+
+  return { trimScore, ownershipStress };
+};
+
 const SideBySideExplainer = ({
   variantA,
   variantB,
@@ -181,6 +201,35 @@ const SideBySideExplainer = ({
   carModel,
   onClose,
 }: SideBySideExplainerProps) => {
+  const { narratives, loading, generate } = useAINarrative();
+  const intA = useVariantIntelligence(variantA, allVariants, depreciation, profile);
+  const intB = useVariantIntelligence(variantB, allVariants, depreciation, profile);
+
+  const cacheKey = `tw_ai_compare_${variantA.id}_${variantB.id}`;
+  const aiNarrative = narratives[cacheKey];
+  const isGenerating = loading[cacheKey];
+
+  const handleCompareAI = () => {
+    generate('compare', {
+      car: { brand: carBrand, model: carModel, fuel_type: '', body_type: '' },
+      profile,
+      variantA: {
+        name: variantA.name,
+        price: variantA.ex_showroom_price,
+        trimScore: intA.trimScore?.score ?? 0,
+        stressLevel: intA.ownershipStress?.level ?? 'unknown',
+        mileage: variantA.mileage_kmpl,
+      },
+      variantB: {
+        name: variantB.name,
+        price: variantB.ex_showroom_price,
+        trimScore: intB.trimScore?.score ?? 0,
+        stressLevel: intB.ownershipStress?.level ?? 'unknown',
+        mileage: variantB.mileage_kmpl,
+      },
+    }, cacheKey);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -200,6 +249,45 @@ const SideBySideExplainer = ({
         >
           Exit Compare
         </button>
+      </div>
+
+      {/* AI Comparison Narrator — TrimWise Take */}
+      <div className="bg-card rounded-xl p-4 card-shadow border border-border/50 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-sm font-bold text-foreground">TrimWise Take</span>
+          </div>
+          {!aiNarrative && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCompareAI}
+              disabled={isGenerating || !intA.trimScore || !intB.trimScore}
+              className="text-xs gap-1.5"
+            >
+              {isGenerating ? (
+                <><Loader2 className="w-3 h-3 animate-spin" /> Comparing...</>
+              ) : (
+                <><Sparkles className="w-3 h-3" /> AI Compare</>
+              )}
+            </Button>
+          )}
+        </div>
+        {aiNarrative ? (
+          <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground [&>p]:my-1">
+            <ReactMarkdown>{aiNarrative}</ReactMarkdown>
+          </div>
+        ) : !isGenerating ? (
+          <p className="text-xs text-muted-foreground">
+            Get an AI-powered verdict on which variant is better for your profile.
+          </p>
+        ) : (
+          <div className="space-y-1.5 animate-pulse">
+            <div className="h-3 bg-secondary rounded w-full" />
+            <div className="h-3 bg-secondary rounded w-3/4" />
+          </div>
+        )}
       </div>
 
       {/* Profile context */}
@@ -230,7 +318,6 @@ const SideBySideExplainer = ({
             carModel={carModel}
             side="left"
           />
-          {/* Center divider */}
           <div className="flex flex-col items-center pt-16">
             <div className="w-px h-full bg-border/50" />
           </div>

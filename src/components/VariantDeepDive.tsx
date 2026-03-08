@@ -22,6 +22,9 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import FeatureUsageSimulator from '@/components/FeatureUsageSimulator';
 import VariantDeltaAnalyzer from '@/components/VariantDeltaAnalyzer';
 import AIDecisionExplainer from '@/components/AIDecisionExplainer';
+import AIFeatureWorth from '@/components/AIFeatureWorth';
+import AIOwnershipStory from '@/components/AIOwnershipStory';
+import AINegotiationTips from '@/components/AINegotiationTips';
 import ChatAdvisor from '@/components/ChatAdvisor';
 
 interface VariantDeepDiveProps {
@@ -277,6 +280,13 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                         {vf.resale_impact === 'positive' ? '↑' : vf.resale_impact === 'negative' ? '↓' : '→'} Resale: {vf.resale_impact}
                       </span>
                     </div>
+                    {/* AI Feature Worth Advisor */}
+                    <AIFeatureWorth
+                      feature={vf}
+                      carBrand={car?.brand ?? ''}
+                      carModel={car?.model ?? ''}
+                      profile={profile}
+                    />
                   </div>
                 );
               }) : (
@@ -457,11 +467,33 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
           </TabsContent>
 
           <TabsContent value="tco">
-            <TCOSimulator
-              variant={variant}
-              depreciation={depreciation ?? []}
-              dailyKm={profile.dailyUsageKm}
-            />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+              <TCOSimulator
+                variant={variant}
+                depreciation={depreciation ?? []}
+                dailyKm={profile.dailyUsageKm}
+              />
+
+              {/* AI Ownership Story */}
+              {depreciation && depreciation.length > 0 && (
+                <AIOwnershipStory
+                  variant={variant}
+                  carBrand={car?.brand ?? ''}
+                  carModel={car?.model ?? ''}
+                  profile={profile}
+                  depreciation={depreciation}
+                />
+              )}
+
+              {/* AI Negotiation Tips */}
+              <AINegotiationTips
+                variant={variant}
+                carBrand={car?.brand ?? ''}
+                carModel={car?.model ?? ''}
+                profile={profile}
+                cityPricing={cityPrice}
+              />
+            </motion.div>
           </TabsContent>
 
           <TabsContent value="financial">
