@@ -59,7 +59,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           <Button
             onClick={onGetStarted}
             size="lg"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-6 text-lg rounded-xl gap-2 font-semibold"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 py-5 md:py-6 text-lg rounded-xl gap-2 font-semibold"
           >
             Get Started
             <ChevronRight className="w-5 h-5" />
