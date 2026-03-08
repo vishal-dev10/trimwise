@@ -280,6 +280,13 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                         {vf.resale_impact === 'positive' ? '↑' : vf.resale_impact === 'negative' ? '↓' : '→'} Resale: {vf.resale_impact}
                       </span>
                     </div>
+                    {/* AI Feature Worth Advisor */}
+                    <AIFeatureWorth
+                      feature={vf}
+                      carBrand={car?.brand ?? ''}
+                      carModel={car?.model ?? ''}
+                      profile={profile}
+                    />
                   </div>
                 );
               }) : (
