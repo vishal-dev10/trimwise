@@ -467,12 +467,33 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
           </TabsContent>
 
           <TabsContent value="tco">
-            <TCOSimulator
-              variant={variant}
-              depreciation={depreciation ?? []}
-              dailyKm={profile.dailyUsageKm}
-            />
-          </TabsContent>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+              <TCOSimulator
+                variant={variant}
+                depreciation={depreciation ?? []}
+                dailyKm={profile.dailyUsageKm}
+              />
+
+              {/* AI Ownership Story */}
+              {depreciation && depreciation.length > 0 && (
+                <AIOwnershipStory
+                  variant={variant}
+                  carBrand={car?.brand ?? ''}
+                  carModel={car?.model ?? ''}
+                  profile={profile}
+                  depreciation={depreciation}
+                />
+              )}
+
+              {/* AI Negotiation Tips */}
+              <AINegotiationTips
+                variant={variant}
+                carBrand={car?.brand ?? ''}
+                carModel={car?.model ?? ''}
+                profile={profile}
+                cityPricing={cityPrice}
+              />
+            </motion.div>
 
           <TabsContent value="financial">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
