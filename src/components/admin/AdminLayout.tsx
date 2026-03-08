@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Upload, History, Menu, X, Shield,
+  LayoutDashboard, Upload, History, Menu, X, Shield, BookOpen,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -9,6 +9,8 @@ const navItems = [
   { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { label: 'Data Management', path: '/admin/data', icon: Upload },
   { label: 'Version History', path: '/admin/versions', icon: History },
+  { label: 'Admin Manual', path: '/manual/admin', icon: BookOpen },
+  { label: 'User Manual', path: '/manual/user', icon: BookOpen },
 ];
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {

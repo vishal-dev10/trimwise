@@ -135,3 +135,23 @@
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
   }
 }
+
+/* Print styles for manual pages */
+@media print {
+  .manual-print {
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #000;
+    background: #fff;
+  }
+
+  .manual-print .print\:hidden,
+  .manual-print .print:hidden {
+    display: none !important;
+  }
+
+  @page {
+    margin: 2cm;
+    size: A4;
+  }
+}
