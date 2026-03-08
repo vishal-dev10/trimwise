@@ -36,6 +36,8 @@ const VariantCard = ({
   compareMode,
   isSelected,
   onToggleCompare,
+  isShortlisted,
+  onToggleShortlist,
 }: {
   variant: any;
   allVariants: any[];
@@ -48,6 +50,8 @@ const VariantCard = ({
   compareMode: boolean;
   isSelected: boolean;
   onToggleCompare: () => void;
+  isShortlisted: boolean;
+  onToggleShortlist: () => void;
 }) => {
   const { data: features } = useVariantFeatures(variant.id);
   const resaleAt = depreciation?.find(d => d.year_number === profile.ownershipYears);
