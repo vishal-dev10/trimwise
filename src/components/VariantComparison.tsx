@@ -323,6 +323,8 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantC
                 compareMode={compareMode}
                 isSelected={compareIds.includes(variant.id)}
                 onToggleCompare={() => toggleCompareId(variant.id)}
+                isShortlisted={shortlistedVariantIds.has(variant.id)}
+                onToggleShortlist={() => toggleShortlist(variant.id)}
               />
             ))}
           </div>
