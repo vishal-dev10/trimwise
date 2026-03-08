@@ -7,6 +7,16 @@ import { useCars } from '@/hooks/use-cars';
 import { formatPrice } from '@/lib/mock-data';
 import { Skeleton } from '@/components/ui/skeleton';
 
+import hyundaiCreta from '@/assets/hyundai-creta.jpg';
+import tataNexon from '@/assets/tata-nexon.jpg';
+import marutiBrezza from '@/assets/maruti-brezza.jpg';
+
+const carImageMap: Record<string, string> = {
+  'hyundai creta': hyundaiCreta,
+  'tata nexon': tataNexon,
+  'maruti suzuki brezza': marutiBrezza,
+};
+
 interface CarGridProps {
   onSelectCar: (carId: string) => void;
 }
