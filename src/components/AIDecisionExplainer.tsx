@@ -1,10 +1,13 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Brain, Lightbulb, TrendingUp, AlertTriangle, CheckCircle2, Target, Zap, ShieldCheck } from 'lucide-react';
+import { Brain, Lightbulb, TrendingUp, AlertTriangle, CheckCircle2, Target, Zap, ShieldCheck, Sparkles, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import ReactMarkdown from 'react-markdown';
 import type { OnboardingData } from '@/lib/mock-data';
 import type { TrimScoreResult, OwnershipStressResult, FeatureRegretResult } from '@/lib/intelligence-engine';
+import { useAINarrative } from '@/hooks/use-ai-narrative';
 
 export interface AIDecisionExplainerProps {
   variant: {
@@ -36,7 +39,6 @@ export function generateReasoningBlocks(
   const { variant, profile, trimScore, ownershipStress, featureRegrets } = props;
   const blocks: ReasoningBlock[] = [];
 
-  // 1. Profile-fit reasoning
   const dailyKmLabel = profile.dailyUsageKm <= 20 ? 'light' : profile.dailyUsageKm <= 40 ? 'moderate' : 'heavy';
   const mileage = variant.mileage_kmpl ?? 15;
   const annualFuelCost = Math.round((profile.dailyUsageKm * 365 * 105) / mileage);
@@ -56,7 +58,6 @@ export function generateReasoningBlocks(
     }`,
   });
 
-  // 2. Trim score reasoning
   if (trimScore) {
     const b = trimScore.breakdown;
     const scoreVerdict: 'positive' | 'caution' | 'warning' =
@@ -87,7 +88,6 @@ export function generateReasoningBlocks(
     });
   }
 
-  // 3. Ownership stress reasoning
   if (ownershipStress) {
     const stressVerdict: 'positive' | 'caution' | 'warning' =
       ownershipStress.level === 'low' ? 'positive' : ownershipStress.level === 'moderate' ? 'caution' : 'warning';
@@ -115,7 +115,6 @@ export function generateReasoningBlocks(
     });
   }
 
-  // 4. Feature regret analysis
   const highRegrets = featureRegrets.filter(r => r.regretLevel === 'high');
   const mediumRegrets = featureRegrets.filter(r => r.regretLevel === 'medium');
 
@@ -147,7 +146,6 @@ export function generateRecommendation(props: AIDecisionExplainerProps): {
   const stress = ownershipStress?.score ?? 50;
   const highRegrets = featureRegrets.filter(r => r.regretLevel === 'high').length;
 
-  // Composite decision
   const composite = score * 0.5 - stress * 0.25 - highRegrets * 8;
 
   if (composite >= 40) {
@@ -197,9 +195,33 @@ export const blockVerdictStyles = {
 const AIDecisionExplainer = (props: AIDecisionExplainerProps) => {
   const reasoningBlocks = useMemo(() => generateReasoningBlocks(props), [props]);
   const recommendation = useMemo(() => generateRecommendation(props), [props]);
+  const { narratives, loading, generate } = useAINarrative();
 
   const vc = verdictConfig[recommendation.verdict];
   const VerdictIcon = vc.icon;
+
+  const cacheKey = `tw_ai_explain-score_${props.variant.name}_${props.profile.city}`;
+  const aiNarrative = narratives[cacheKey];
+  const isGenerating = loading[cacheKey];
+
+  const handleGenerateAI = () => {
+    generate('explain-score', {
+      variant: {
+        name: props.variant.name,
+        price: props.variant.ex_showroom_price,
+        mileage: props.variant.mileage_kmpl,
+      },
+      car: { brand: props.carBrand, model: props.carModel, fuel_type: '', body_type: '' },
+      profile: props.profile,
+      trimScore: props.trimScore?.score ?? null,
+      stressLevel: props.ownershipStress?.level ?? null,
+      stressScore: props.ownershipStress?.score ?? null,
+      scoreBreakdown: props.trimScore?.breakdown ?? undefined,
+      featureRegrets: props.featureRegrets
+        .filter(r => r.regretLevel !== 'low')
+        .map(r => ({ name: r.featureName, regretLevel: r.regretLevel, reason: r.reason })),
+    }, cacheKey);
+  };
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
@@ -219,6 +241,47 @@ const AIDecisionExplainer = (props: AIDecisionExplainerProps) => {
         <p className="text-sm text-muted-foreground leading-relaxed pl-12">
           {recommendation.reasoning}
         </p>
+      </div>
+
+      {/* ─── AI Narrative Section ─── */}
+      <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            AI Expert Analysis
+          </h3>
+          {!aiNarrative && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateAI}
+              disabled={isGenerating}
+              className="text-xs gap-1.5"
+            >
+              {isGenerating ? (
+                <><Loader2 className="w-3 h-3 animate-spin" /> Analyzing...</>
+              ) : (
+                <><Sparkles className="w-3 h-3" /> Generate Insight</>
+              )}
+            </Button>
+          )}
+        </div>
+
+        {aiNarrative ? (
+          <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground [&>p]:my-2">
+            <ReactMarkdown>{aiNarrative}</ReactMarkdown>
+          </div>
+        ) : !isGenerating ? (
+          <p className="text-sm text-muted-foreground">
+            Click "Generate Insight" for a personalized AI analysis of this variant based on your profile, scores, and driving pattern.
+          </p>
+        ) : (
+          <div className="space-y-2 animate-pulse">
+            <div className="h-4 bg-secondary rounded w-full" />
+            <div className="h-4 bg-secondary rounded w-4/5" />
+            <div className="h-4 bg-secondary rounded w-3/5" />
+          </div>
+        )}
       </div>
 
       {/* ─── Reasoning blocks accordion ─── */}
