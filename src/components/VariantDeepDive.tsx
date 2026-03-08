@@ -494,6 +494,7 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                 cityPricing={cityPrice}
               />
             </motion.div>
+          </TabsContent>
 
           <TabsContent value="financial">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
