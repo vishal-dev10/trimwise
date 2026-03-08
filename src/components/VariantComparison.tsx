@@ -96,6 +96,16 @@ const VariantCard = ({
       }`}
       onClick={handleClick}
     >
+      {/* Shortlist heart button */}
+      {!compareMode && (
+        <button
+          className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-secondary/80 transition-colors"
+          onClick={(e) => { e.stopPropagation(); onToggleShortlist(); }}
+        >
+          <Heart className={`w-5 h-5 transition-colors ${isShortlisted ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+        </button>
+      )}
+
       {/* Compare selection indicator */}
       {compareMode && (
         <div className={`absolute top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
