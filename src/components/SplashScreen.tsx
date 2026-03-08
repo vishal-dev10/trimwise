@@ -70,7 +70,7 @@ const SplashScreen = ({ onGetStarted }: SplashScreenProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1 }}
-          className="mt-12 flex items-center justify-center gap-8 text-primary-foreground/40 text-sm"
+          className="mt-6 md:mt-12 flex items-center justify-center flex-wrap gap-3 md:gap-8 text-primary-foreground/40 text-sm"
         >
           <span>Trim Optimizer</span>
           <span className="w-1 h-1 rounded-full bg-primary/40" />
