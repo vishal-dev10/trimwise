@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import { useUserProfile } from '@/hooks/use-user-profile';
 import SplashScreen from '@/components/SplashScreen';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import CarGrid from '@/components/CarGrid';
@@ -13,15 +14,31 @@ import { LogOut, User } from 'lucide-react';
 type View = 'splash' | 'onboarding' | 'cars' | 'variants' | 'deepdive';
 
 const Index = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { profile: savedProfile, isLoading: profileLoading, saveProfile } = useUserProfile();
   const [view, setView] = useState<View>('splash');
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [selectedCarId, setSelectedCarId] = useState<string>('');
   const [selectedVariantId, setSelectedVariantId] = useState<string>('');
+  const [hasCheckedProfile, setHasCheckedProfile] = useState(false);
 
-  const handleOnboardingComplete = (data: OnboardingData) => {
+  // When user is logged in and profile loads, auto-skip onboarding
+  useEffect(() => {
+    if (!user || profileLoading || hasCheckedProfile) return;
+    setHasCheckedProfile(true);
+    if (savedProfile) {
+      setOnboardingData(savedProfile);
+      setView('cars');
+    }
+  }, [user, profileLoading, savedProfile, hasCheckedProfile]);
+
+  const handleOnboardingComplete = async (data: OnboardingData) => {
     setOnboardingData(data);
     setView('cars');
+    // Persist to DB in background
+    if (user) {
+      try { await saveProfile(data); } catch { /* silent */ }
+    }
   };
 
   const handleSelectCar = (carId: string) => {
@@ -49,7 +66,7 @@ const Index = () => {
 
   const profile = onboardingData ?? defaultProfile;
 
-  if (loading) {
+  if (authLoading || (user && profileLoading && !hasCheckedProfile)) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -62,7 +79,6 @@ const Index = () => {
     return <AuthPage />;
   }
 
-  // User avatar bar (shown when logged in and past splash)
   const UserBar = () => {
     if (!user || view === 'splash') return null;
     return (
