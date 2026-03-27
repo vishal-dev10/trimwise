@@ -127,7 +127,13 @@ const Index = () => {
   const renderView = () => {
     switch (view) {
       case 'splash':
-        return <SplashScreen onGetStarted={() => setView('onboarding')} />;
+        return <SplashScreen onGetStarted={() => {
+          if (onboardingData) {
+            setView('cars');
+          } else {
+            setView('onboarding');
+          }
+        }} />;
       case 'onboarding':
         return (
           <OnboardingFlow
