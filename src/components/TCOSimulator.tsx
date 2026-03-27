@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Slider } from '@/components/ui/slider';
 import { formatPrice } from '@/lib/mock-data';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import DepreciationShock from '@/components/DepreciationShock';
+
 
 interface TCOSimulatorProps {
   variant: {
@@ -123,8 +123,6 @@ const TCOSimulator = ({ variant, depreciation, dailyKm: initialDailyKm = 30 }: T
         </div>
       </div>
 
-      {/* Depreciation Shock */}
-      <DepreciationShock onRoadPrice={onRoad} depreciation={depreciation} />
     </motion.div>
   );
 };
