@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Wallet, Clock, MapPin, Gauge, Users, Cpu, Rocket, CreditCard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Wallet, Clock, MapPin, Gauge, Users, Cpu, Rocket } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
