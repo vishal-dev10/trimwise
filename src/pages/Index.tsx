@@ -33,13 +33,13 @@ const Index = () => {
     }
   }, [roleLoading, isAdmin, navigate]);
 
-  // When user is logged in and profile loads, auto-skip onboarding
+  // When user is logged in and profile loads, pre-load profile data but don't skip splash
   useEffect(() => {
     if (!user || profileLoading || hasCheckedProfile || isAdmin) return;
     setHasCheckedProfile(true);
     if (savedProfile) {
       setOnboardingData(savedProfile);
-      setView('cars');
+      // Don't auto-navigate — let user see splash first
     }
   }, [user, profileLoading, savedProfile, hasCheckedProfile, isAdmin]);
 
@@ -127,7 +127,13 @@ const Index = () => {
   const renderView = () => {
     switch (view) {
       case 'splash':
-        return <SplashScreen onGetStarted={() => setView('onboarding')} />;
+        return <SplashScreen onGetStarted={() => {
+          if (onboardingData) {
+            setView('cars');
+          } else {
+            setView('onboarding');
+          }
+        }} />;
       case 'onboarding':
         return (
           <OnboardingFlow

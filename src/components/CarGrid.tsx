@@ -10,11 +10,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import hyundaiCreta from '@/assets/hyundai-creta.jpg';
 import tataNexon from '@/assets/tata-nexon.jpg';
 import marutiBrezza from '@/assets/maruti-brezza.jpg';
+import mahindraScorpioN from '@/assets/mahindra-scorpio-n.jpg';
 
 const carImageMap: Record<string, string> = {
   'hyundai creta': hyundaiCreta,
   'tata nexon': tataNexon,
   'maruti suzuki brezza': marutiBrezza,
+  'mahindra scorpio n': mahindraScorpioN,
 };
 
 interface CarGridProps {
