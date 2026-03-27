@@ -1,30 +1,22 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { ChevronLeft, TrendingUp, Wrench, Shield, Zap, IndianRupee, Star, AlertTriangle, CheckCircle2, Brain, Activity, HeartPulse, BarChart3 } from 'lucide-react';
+import { ChevronLeft, TrendingUp, Wrench, Shield, Zap, IndianRupee, Star, AlertTriangle, CheckCircle2, Brain, Activity, HeartPulse, Wallet } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCars, useCarVariants, useVariantFeatures, useCityPricing, useDepreciation } from '@/hooks/use-cars';
 import { formatPrice, calculateTCO, calculateEMI, type OnboardingData } from '@/lib/mock-data';
 import TCOSimulator from '@/components/TCOSimulator';
-import UpgradePathSimulator from '@/components/UpgradePathSimulator';
-import FinancialStretchMeter from '@/components/FinancialStretchMeter';
-import { loadFinancialProfile } from '@/lib/financial-engine';
 import {
   calculateFeatureRegret,
   calculateOwnershipStress,
   calculateTrimScore,
   stressLevelColor,
   stressLevelBg,
-  regretLevelColor,
   type FeatureRegretResult,
 } from '@/lib/intelligence-engine';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
-import FeatureUsageSimulator from '@/components/FeatureUsageSimulator';
 import VariantDeltaAnalyzer from '@/components/VariantDeltaAnalyzer';
 import AIDecisionExplainer from '@/components/AIDecisionExplainer';
-import AIFeatureWorth from '@/components/AIFeatureWorth';
-import AIOwnershipStory from '@/components/AIOwnershipStory';
-import AINegotiationTips from '@/components/AINegotiationTips';
 import ChatAdvisor from '@/components/ChatAdvisor';
 
 interface VariantDeepDiveProps {
@@ -45,7 +37,6 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
   const variant = variants?.find(v => v.id === variantId);
   const cityPrice = cityPricing?.find(cp => cp.city === profile.city);
 
-  // Intelligence computations
   const ownershipStress = useMemo(() => {
     if (!features) return null;
     return calculateOwnershipStress(features);
@@ -56,8 +47,6 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
     return calculateTrimScore(variant, variants, features, depreciation, ownershipStress, profile);
   }, [variant, variants, features, depreciation, ownershipStress, profile]);
 
-  // Regret risk for features that are MISSING from this variant
-  // We'd need all features to compare, but we can compute for existing ones
   const featureRegrets = useMemo(() => {
     if (!features) return [];
     return features
@@ -79,20 +68,6 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
         profile
       ));
   }, [features, profile]);
-
-  const financialProfile = useMemo(() => loadFinancialProfile(), []);
-
-  // Find mid variant for upgrade path (variant closest to median price)
-  const midVariant = useMemo(() => {
-    if (!variants || variants.length < 2) return null;
-    const sorted = [...variants].sort((a, b) => a.ex_showroom_price - b.ex_showroom_price);
-    return sorted[Math.floor(sorted.length / 2)];
-  }, [variants]);
-
-  const topVariant = useMemo(() => {
-    if (!variants || variants.length < 2) return null;
-    return [...variants].sort((a, b) => b.ex_showroom_price - a.ex_showroom_price)[0];
-  }, [variants]);
 
   if (!variant) return null;
 
@@ -140,20 +115,15 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
 
       <div className="max-w-4xl mx-auto px-4 py-6">
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full justify-start bg-secondary/50 rounded-xl p-1 mb-6 overflow-x-auto">
-            <TabsTrigger value="overview" className="rounded-lg text-sm">Overview</TabsTrigger>
-            <TabsTrigger value="features" className="rounded-lg text-sm">Features</TabsTrigger>
-            <TabsTrigger value="intelligence" className="rounded-lg text-sm">
-              <Brain className="w-3 h-3 mr-1" /> Intelligence
+          <TabsList className="w-full justify-start bg-secondary/50 rounded-xl p-1 mb-6">
+            <TabsTrigger value="overview" className="rounded-lg text-sm flex-1">Overview</TabsTrigger>
+            <TabsTrigger value="features" className="rounded-lg text-sm flex-1">Features</TabsTrigger>
+            <TabsTrigger value="money" className="rounded-lg text-sm flex-1">
+              <Wallet className="w-3 h-3 mr-1" /> Money
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="rounded-lg text-sm">
-              <BarChart3 className="w-3 h-3 mr-1" /> Analytics
-            </TabsTrigger>
-            <TabsTrigger value="tco" className="rounded-lg text-sm">TCO</TabsTrigger>
-            <TabsTrigger value="financial" className="rounded-lg text-sm">Financial</TabsTrigger>
-            <TabsTrigger value="resale" className="rounded-lg text-sm">Resale</TabsTrigger>
           </TabsList>
 
+          {/* ─── OVERVIEW TAB ─── */}
           <TabsContent value="overview">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
               {/* On-road breakdown */}
@@ -194,7 +164,26 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                 </div>
               </div>
 
-              {/* Intelligence Summary Cards */}
+              {/* Key Specs */}
+              <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+                <h3 className="font-bold text-foreground mb-4">Key Specs</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: 'Engine', value: `${variant.engine_cc}cc`, icon: Zap },
+                    { label: 'Transmission', value: variant.transmission, icon: Shield },
+                    { label: 'Mileage', value: `${variant.mileage_kmpl} kmpl`, icon: TrendingUp },
+                    { label: 'Power', value: `${variant.horsepower} bhp`, icon: Zap },
+                  ].map(spec => (
+                    <div key={spec.label} className="bg-secondary/50 rounded-xl p-3">
+                      <spec.icon className="w-4 h-4 text-primary mb-1" />
+                      <p className="text-xs text-muted-foreground">{spec.label}</p>
+                      <p className="font-semibold text-foreground capitalize">{spec.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Trim Score + Ownership Stress summary */}
               {(trimScore || ownershipStress) && (
                 <div className="grid grid-cols-2 gap-3">
                   {trimScore && (
@@ -222,6 +211,62 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                 </div>
               )}
 
+              {/* AI Decision Explainer */}
+              <AIDecisionExplainer
+                variant={variant}
+                carBrand={car?.brand ?? ''}
+                carModel={car?.model ?? ''}
+                profile={profile}
+                trimScore={trimScore}
+                ownershipStress={ownershipStress}
+                featureRegrets={featureRegrets}
+                variantCount={variants?.length ?? 0}
+              />
+
+              {/* Trim Score Breakdown (collapsible) */}
+              {trimScore && (
+                <Collapsible>
+                  <CollapsibleTrigger className="w-full">
+                    <div className="bg-card rounded-2xl p-4 card-shadow border border-border/50 flex items-center justify-between hover:bg-secondary/30 transition-colors">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-primary" />
+                        <span className="font-bold text-foreground text-sm">Trim Score Breakdown</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">Tap to expand</span>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="bg-card rounded-b-2xl px-5 pb-5 border-x border-b border-border/50 space-y-3 -mt-2">
+                      {[
+                        { label: 'Feature Utility', value: trimScore.breakdown.featureUtility, positive: true },
+                        { label: 'Resale Strength', value: trimScore.breakdown.resaleStrength, positive: true },
+                        { label: 'Reliability Weight', value: trimScore.breakdown.reliabilityWeight, positive: true },
+                        { label: 'Cost Deviation', value: trimScore.breakdown.ownershipCostDeviation, positive: false },
+                        { label: 'Overpriced Penalty', value: trimScore.breakdown.overpricedPenalty, positive: false },
+                        { label: 'Stress Factor', value: trimScore.breakdown.stressFactor, positive: false },
+                      ].map(item => (
+                        <div key={item.label}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-muted-foreground">{item.label}</span>
+                            <span className={item.positive ? 'text-chart-positive' : 'text-destructive'}>
+                              {item.positive ? '+' : '−'}{item.value}
+                            </span>
+                          </div>
+                          <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                            <motion.div
+                              className={`h-full rounded-full ${item.positive ? 'bg-chart-positive' : 'bg-destructive'}`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(100, item.value)}%` }}
+                              transition={{ duration: 0.6, delay: 0.1 }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
               {/* EMI Card */}
               <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
                 <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
@@ -231,31 +276,14 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                 <p className="text-3xl font-bold text-foreground">₹{emi.toLocaleString('en-IN')}<span className="text-sm font-normal text-muted-foreground">/month</span></p>
                 <p className="text-xs text-muted-foreground mt-1">80% financing · 8.5% rate · 5 year tenure</p>
               </div>
-
-              {/* Specs */}
-              <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
-                <h3 className="font-bold text-foreground mb-4">Key Specs</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Engine', value: `${variant.engine_cc}cc`, icon: Zap },
-                    { label: 'Transmission', value: variant.transmission, icon: Shield },
-                    { label: 'Mileage', value: `${variant.mileage_kmpl} kmpl`, icon: TrendingUp },
-                    { label: 'Power', value: `${variant.horsepower} bhp`, icon: Zap },
-                  ].map(spec => (
-                    <div key={spec.label} className="bg-secondary/50 rounded-xl p-3">
-                      <spec.icon className="w-4 h-4 text-primary mb-1" />
-                      <p className="text-xs text-muted-foreground">{spec.label}</p>
-                      <p className="font-semibold text-foreground capitalize">{spec.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </motion.div>
           </TabsContent>
 
+          {/* ─── FEATURES TAB ─── */}
           <TabsContent value="features">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-              {features && features.length > 0 ? features.map((vf: any, i: number) => {
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+              {/* Feature list */}
+              {features && features.length > 0 ? features.map((vf: any) => {
                 const regret = featureRegrets.find(r => r.featureId === vf.feature_id);
                 return (
                   <div key={vf.id} className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
@@ -279,14 +307,16 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                       <span className={`text-xs font-medium ${resaleImpactColor(vf.resale_impact)}`}>
                         {vf.resale_impact === 'positive' ? '↑' : vf.resale_impact === 'negative' ? '↓' : '→'} Resale: {vf.resale_impact}
                       </span>
+                      {regret && (
+                        <Badge className={`text-xs ${
+                          regret.regretLevel === 'low' ? 'bg-chart-positive/10 text-chart-positive border-chart-positive/20' :
+                          regret.regretLevel === 'medium' ? 'bg-accent/10 text-accent border-accent/20' :
+                          'bg-destructive/10 text-destructive border-destructive/20'
+                        }`}>
+                          {regret.regretLevel === 'low' ? '✓ Good fit' : `⚠ ${regret.regretRiskPct}% regret`}
+                        </Badge>
+                      )}
                     </div>
-                    {/* AI Feature Worth Advisor */}
-                    <AIFeatureWorth
-                      feature={vf}
-                      carBrand={car?.brand ?? ''}
-                      carModel={car?.model ?? ''}
-                      profile={profile}
-                    />
                   </div>
                 );
               }) : (
@@ -295,131 +325,8 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                   <p className="text-sm mt-1">This is the base variant.</p>
                 </div>
               )}
-            </motion.div>
-          </TabsContent>
 
-          {/* ─── INTELLIGENCE TAB ─── */}
-          <TabsContent value="intelligence">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-
-              {/* AI Decision Explainer */}
-              <AIDecisionExplainer
-                variant={variant}
-                carBrand={car?.brand ?? ''}
-                carModel={car?.model ?? ''}
-                profile={profile}
-                trimScore={trimScore}
-                ownershipStress={ownershipStress}
-                featureRegrets={featureRegrets}
-                variantCount={variants?.length ?? 0}
-              />
-
-              {/* Trim Score Breakdown */}
-              {trimScore && (
-                <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
-                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-primary" />
-                    Reliability-Weighted Trim Score
-                  </h3>
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="relative w-20 h-20">
-                      <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                        <circle cx="18" cy="18" r="16" fill="none" stroke="hsl(var(--secondary))" strokeWidth="3" />
-                        <circle
-                          cx="18" cy="18" r="16" fill="none"
-                          stroke="hsl(var(--primary))"
-                          strokeWidth="3"
-                          strokeDasharray={`${trimScore.score} ${100 - trimScore.score}`}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <span className="absolute inset-0 flex items-center justify-center text-lg font-display font-bold text-foreground">
-                        {trimScore.score}
-                      </span>
-                    </div>
-                    <div className="flex-1 text-sm text-muted-foreground">
-                      <p>Composite score factoring feature utility, resale strength, ownership cost, and reliability.</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Feature Utility', value: trimScore.breakdown.featureUtility, positive: true },
-                      { label: 'Resale Strength', value: trimScore.breakdown.resaleStrength, positive: true },
-                      { label: 'Reliability Weight', value: trimScore.breakdown.reliabilityWeight, positive: true },
-                      { label: 'Cost Deviation', value: trimScore.breakdown.ownershipCostDeviation, positive: false },
-                      { label: 'Overpriced Penalty', value: trimScore.breakdown.overpricedPenalty, positive: false },
-                      { label: 'Stress Factor', value: trimScore.breakdown.stressFactor, positive: false },
-                    ].map(item => (
-                      <div key={item.label}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-muted-foreground">{item.label}</span>
-                          <span className={item.positive ? 'text-chart-positive' : 'text-destructive'}>
-                            {item.positive ? '+' : '−'}{item.value}
-                          </span>
-                        </div>
-                        <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
-                          <motion.div
-                            className={`h-full rounded-full ${item.positive ? 'bg-chart-positive' : 'bg-destructive'}`}
-                            initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, item.value)}%` }}
-                            transition={{ duration: 0.6, delay: 0.1 }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Ownership Stress */}
-              {ownershipStress && (
-                <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
-                  <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
-                    <HeartPulse className={`w-4 h-4 ${stressLevelColor(ownershipStress.level)}`} />
-                    Ownership Stress Index
-                  </h3>
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className={`px-4 py-2 rounded-xl ${stressLevelBg(ownershipStress.level)}`}>
-                      <span className={`text-2xl font-display font-bold capitalize ${stressLevelColor(ownershipStress.level)}`}>
-                        {ownershipStress.level}
-                      </span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                        <motion.div
-                          className={`h-full rounded-full ${
-                            ownershipStress.level === 'low' ? 'bg-chart-positive' :
-                            ownershipStress.level === 'moderate' ? 'bg-accent' : 'bg-destructive'
-                          }`}
-                          initial={{ width: 0 }}
-                          animate={{ width: `${ownershipStress.score}%` }}
-                          transition={{ duration: 0.8 }}
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">{ownershipStress.score}/100</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    {ownershipStress.factors.map((f, i) => (
-                      <Collapsible key={i}>
-                        <CollapsibleTrigger className="w-full">
-                          <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-secondary/50 hover:bg-secondary/80 transition-colors">
-                            <span className="text-sm font-medium text-foreground">{f.label}</span>
-                            <Badge variant="outline" className="text-xs">{f.contribution}%</Badge>
-                          </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <p className="text-xs text-muted-foreground px-3 py-2">{f.description}</p>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Feature Regret Indicators (for included features) */}
+              {/* Feature Regret Summary */}
               {featureRegrets.length > 0 && (
                 <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
                   <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
@@ -448,16 +355,6 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
                   </div>
                 </div>
               )}
-            </motion.div>
-          </TabsContent>
-
-          {/* ─── ANALYTICS TAB ─── */}
-          <TabsContent value="analytics">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-              {/* Feature Usage Simulator */}
-              {features && features.length > 0 && (
-                <FeatureUsageSimulator features={features} profile={profile} />
-              )}
 
               {/* Variant Delta Analyzer */}
               {variants && variants.length >= 2 && (
@@ -466,64 +363,27 @@ const VariantDeepDive = ({ carId, variantId, onBack, profile }: VariantDeepDiveP
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="tco">
+          {/* ─── MONEY TAB ─── */}
+          <TabsContent value="money">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+              {/* TCO Simulator */}
               <TCOSimulator
                 variant={variant}
                 depreciation={depreciation ?? []}
                 dailyKm={profile.dailyUsageKm}
               />
 
-              {/* AI Ownership Story */}
-              {depreciation && depreciation.length > 0 && (
-                <AIOwnershipStory
-                  variant={variant}
-                  carBrand={car?.brand ?? ''}
-                  carModel={car?.model ?? ''}
-                  profile={profile}
-                  depreciation={depreciation}
-                />
-              )}
+              {/* EMI Quick Card */}
+              <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
+                <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  EMI Estimate
+                </h3>
+                <p className="text-3xl font-bold text-foreground">₹{emi.toLocaleString('en-IN')}<span className="text-sm font-normal text-muted-foreground">/month</span></p>
+                <p className="text-xs text-muted-foreground mt-1">80% financing · 8.5% rate · 5 year tenure</p>
+              </div>
 
-              {/* AI Negotiation Tips */}
-              <AINegotiationTips
-                variant={variant}
-                carBrand={car?.brand ?? ''}
-                carModel={car?.model ?? ''}
-                profile={profile}
-                cityPricing={cityPrice}
-              />
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="financial">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
-              {/* Financial Stretch Meter */}
-              {financialProfile && (
-                <FinancialStretchMeter onRoadPrice={onRoad} financial={financialProfile} />
-              )}
-              {!financialProfile && (
-                <div className="bg-secondary/30 rounded-2xl p-5 border border-border/50 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Add your financial details during onboarding to see the Financial Stress Meter here.
-                  </p>
-                </div>
-              )}
-
-              {/* Upgrade Path Simulator */}
-              {midVariant && topVariant && depreciation && midVariant.id !== topVariant.id && (
-                <UpgradePathSimulator
-                  topVariant={topVariant}
-                  midVariant={midVariant}
-                  depreciation={depreciation}
-                  dailyKm={profile.dailyUsageKm}
-                />
-              )}
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="resale">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+              {/* Depreciation / Resale Timeline */}
               {depreciation && depreciation.length > 0 ? (
                 <>
                   <div className="bg-card rounded-2xl p-5 card-shadow border border-border/50">
