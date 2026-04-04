@@ -20,7 +20,7 @@ const AdminManualPage = () => {
         <header className="text-center mb-12 print:mb-8 print:pt-16">
           <h1 className="text-4xl font-bold tracking-tight mb-2">TrimWise — Admin Manual</h1>
           <p className="text-lg text-gray-500">Data management &amp; intelligence operations guide</p>
-          <p className="text-sm text-gray-400 mt-4">Version 1.0 · March 2026</p>
+          <p className="text-sm text-gray-400 mt-4">Version 2.0 · April 2026</p>
         </header>
 
         {/* TOC */}
@@ -29,10 +29,10 @@ const AdminManualPage = () => {
           <ol className="list-decimal list-inside space-y-1.5 text-sm">
             <li><a href="#access" className="text-blue-600 hover:underline print:text-gray-900">Accessing the Admin Panel</a></li>
             <li><a href="#dashboard" className="text-blue-600 hover:underline print:text-gray-900">Dashboard Overview</a></li>
-            <li><a href="#intelligence" className="text-blue-600 hover:underline print:text-gray-900">Intelligence Widgets</a></li>
-            <li><a href="#forms" className="text-blue-600 hover:underline print:text-gray-900">Data Entry — Forms</a></li>
-            <li><a href="#csv" className="text-blue-600 hover:underline print:text-gray-900">Data Entry — CSV Upload</a></li>
+            <li><a href="#data-forms" className="text-blue-600 hover:underline print:text-gray-900">Data Entry — Forms</a></li>
+            <li><a href="#data-csv" className="text-blue-600 hover:underline print:text-gray-900">Data Entry — CSV Upload</a></li>
             <li><a href="#versions" className="text-blue-600 hover:underline print:text-gray-900">Version History</a></li>
+            <li><a href="#data-order" className="text-blue-600 hover:underline print:text-gray-900">Data Entry Order &amp; Dependencies</a></li>
             <li><a href="#security" className="text-blue-600 hover:underline print:text-gray-900">Security &amp; Roles</a></li>
             <li><a href="#best-practices" className="text-blue-600 hover:underline print:text-gray-900">Best Practices</a></li>
           </ol>
@@ -40,19 +40,25 @@ const AdminManualPage = () => {
 
         {/* 1. Access */}
         <Section id="access" title="1. Accessing the Admin Panel">
-          <p>The admin panel is accessible at <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">/admin</code>.</p>
+          <p>Admin users are <strong>automatically redirected</strong> to the admin panel upon login. Non-admin users cannot access admin routes.</p>
+
           <h3 className="font-semibold text-lg mt-4 mb-2">Prerequisites</h3>
           <ul className="list-disc list-inside ml-2 space-y-1">
             <li>You must have a verified TrimWise account.</li>
-            <li>Your account must have the <strong>admin</strong> role assigned in the <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">user_roles</code> table.</li>
-            <li>Non-admin users attempting to access <code>/admin</code> will see an access denied message.</li>
+            <li>Your account must have the <strong>admin</strong> role assigned in the database.</li>
+            <li>Non-admin users attempting to access <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">/admin</code> will see an access denied message.</li>
           </ul>
 
           <h3 className="font-semibold text-lg mt-4 mb-2">Admin Sidebar Navigation</h3>
+          <p>The sidebar provides access to all admin sections:</p>
           <ul className="list-disc list-inside ml-2 space-y-1">
-            <li><strong>Dashboard</strong> — Overview stats and intelligence widgets</li>
+            <li><strong>Dashboard</strong> — Overview stats and charts</li>
             <li><strong>Data Management</strong> — Forms and CSV upload for all data entities</li>
             <li><strong>Version History</strong> — Audit trail of data changes</li>
+            <li><strong>Admin Manual</strong> — This document</li>
+            <li><strong>User Manual</strong> — End-user documentation</li>
+            <li><strong>Back to App</strong> — Switch to the regular user view</li>
+            <li><strong>Sign Out</strong> — Log out of TrimWise</li>
           </ul>
         </Section>
 
@@ -63,7 +69,7 @@ const AdminManualPage = () => {
           <h3 className="font-semibold text-lg mt-4 mb-2">Stats Cards</h3>
           <p>The top row displays key metrics:</p>
           <ul className="list-disc list-inside ml-2 space-y-1">
-            <li><strong>Total Cars</strong> — Number of active car models in the system</li>
+            <li><strong>Total Cars</strong> — Number of active car models</li>
             <li><strong>Total Variants</strong> — Total trim variants across all cars</li>
             <li><strong>Total Features</strong> — Feature catalog size</li>
             <li><strong>Cities Covered</strong> — Number of cities with pricing data</li>
@@ -74,31 +80,19 @@ const AdminManualPage = () => {
             <li><strong>Features by Category</strong> — Distribution of features across categories (Safety, Comfort, Technology, etc.)</li>
             <li><strong>Cars by Segment</strong> — Breakdown of car models by market segment</li>
           </ul>
-        </Section>
 
-        {/* 3. Intelligence */}
-        <Section id="intelligence" title="3. Intelligence Widgets">
-          <p>Below the main dashboard, three intelligence widgets provide deeper analytical insights:</p>
-
-          <h3 className="font-semibold text-lg mt-4 mb-2">Average Ownership Stress by Segment</h3>
-          <p>A horizontal bar chart showing the mean Ownership Stress Index across car segments. Higher values indicate segments with more complex ownership (higher repair risks, insurance impacts, tech complexity).</p>
-          <Tip>Use this to identify which segments may need better feature curation or pricing adjustments.</Tip>
-
-          <h3 className="font-semibold text-lg mt-4 mb-2">Most Overpriced Variants</h3>
-          <p>A ranked list of variants whose ex-showroom price exceeds the segment average by the highest percentage. Each entry shows:</p>
-          <ul className="list-disc list-inside ml-2 space-y-1">
-            <li>Variant name and parent car model</li>
-            <li>Percentage premium over segment average</li>
-            <li>Actual price vs segment average price</li>
+          <h3 className="font-semibold text-lg mt-4 mb-2">Intelligence Widgets</h3>
+          <p>Below the charts, three analytical widgets provide deeper insights:</p>
+          <ul className="list-disc list-inside ml-2 space-y-1.5">
+            <li><strong>Avg Ownership Stress by Segment</strong> — Horizontal bar chart showing mean Ownership Stress Index across segments</li>
+            <li><strong>Most Overpriced Variants</strong> — Ranked list of variants whose price exceeds segment average, with percentage premium</li>
+            <li><strong>Feature Regret Frequency</strong> — Heatmap of high-demand features most frequently missing from variants</li>
           </ul>
-
-          <h3 className="font-semibold text-lg mt-4 mb-2">Feature Regret Frequency</h3>
-          <p>A colour-coded heatmap showing which high-demand features are most frequently missing from variants. Features are ranked by how often users would "regret" not having them based on profile analysis.</p>
         </Section>
 
-        {/* 4. Forms */}
-        <Section id="forms" title="4. Data Entry — Forms">
-          <p>Navigate to <strong>Data Management → Forms</strong> tab to add individual records.</p>
+        {/* 3. Forms */}
+        <Section id="data-forms" title="3. Data Entry — Forms">
+          <p>Navigate to <strong>Data Management → Forms</strong> tab to add individual records. Six form types are available:</p>
 
           <h3 className="font-semibold text-lg mt-4 mb-2">Add Car</h3>
           <TableSpec rows={[
@@ -146,13 +140,15 @@ const AdminManualPage = () => {
           ]} />
 
           <h3 className="font-semibold text-lg mt-4 mb-2">Link Variant Features</h3>
+          <p>This links a feature from the catalog to a specific variant with per-variant pricing:</p>
           <TableSpec rows={[
             ['Variant', 'Dropdown', 'Required — Select from existing variants'],
             ['Feature', 'Dropdown', 'Required — Select from feature catalog'],
-            ['Incremental Cost (₹)', 'Number', 'Optional — Cost this feature adds'],
+            ['Incremental Cost (₹)', 'Number', 'Optional — Cost this feature adds to this specific variant'],
             ['Usefulness Score', 'Number', 'Optional — 1 to 10'],
             ['Resale Impact', 'Select', 'Positive, Neutral, Negative'],
           ]} />
+          <Tip>The incremental cost is per-variant. A sunroof on a Creta can have a different cost than on a Harrier. Calculate it as the price difference between the variant with and without the feature.</Tip>
 
           <h3 className="font-semibold text-lg mt-4 mb-2">Add Depreciation Model</h3>
           <TableSpec rows={[
@@ -162,19 +158,19 @@ const AdminManualPage = () => {
             ['Year 5 Depreciation %', 'Number', 'Required — Must be between Y3 and Y8'],
             ['Year 8 Depreciation %', 'Number', 'Required — Must be greater than Y5'],
           ]} />
-          <Tip>The depreciation curve must be monotonically increasing: Y1 &lt; Y3 &lt; Y5 &lt; Y8. The form validates this before submission.</Tip>
+          <Tip>The depreciation curve must be monotonically increasing: Y1 &lt; Y3 &lt; Y5 &lt; Y8.</Tip>
         </Section>
 
-        {/* 5. CSV */}
-        <Section id="csv" title="5. Data Entry — CSV Upload">
+        {/* 4. CSV */}
+        <Section id="data-csv" title="4. Data Entry — CSV Upload">
           <p>Navigate to <strong>Data Management → CSV Upload</strong> tab for bulk data imports.</p>
 
-          <h3 className="font-semibold text-lg mt-4 mb-2">How CSV Upload Works</h3>
+          <h3 className="font-semibold text-lg mt-4 mb-2">How It Works</h3>
           <ol className="list-decimal list-inside ml-2 space-y-1.5">
-            <li>Select the appropriate CSV module (Cars, Variants, City Pricing, etc.).</li>
+            <li>Select the appropriate CSV module (Cars, Variants, City Pricing, Features, Variant Features, or Depreciation Models).</li>
             <li>Click <strong>"Choose File"</strong> and select your CSV file.</li>
             <li>The system validates the file structure and data types.</li>
-            <li>If validation passes, click <strong>"Upload"</strong> to import the data.</li>
+            <li>If validation passes, click <strong>"Upload"</strong> to import.</li>
             <li>A success message confirms the number of rows imported.</li>
           </ol>
 
@@ -201,53 +197,65 @@ const AdminManualPage = () => {
           <Tip>Always use UTF-8 encoding. The first row must be the header row. Empty optional columns are acceptable.</Tip>
         </Section>
 
-        {/* 6. Versions */}
-        <Section id="versions" title="6. Version History">
+        {/* 5. Versions */}
+        <Section id="versions" title="5. Version History">
           <p>Navigate to <strong>Version History</strong> in the admin sidebar to view the audit trail.</p>
           <ul className="list-disc list-inside ml-2 space-y-1.5">
             <li>Every CSV upload creates a new <strong>dataset version</strong> with a version number, timestamp, and upload summary.</li>
             <li>The summary shows <strong>rows added, updated, and deleted</strong> for each operation.</li>
             <li>Versions are grouped by entity type (Cars, Variants, Features, etc.).</li>
-            <li>Admin actions are also logged in the <strong>audit log</strong> for accountability.</li>
           </ul>
+        </Section>
+
+        {/* 6. Data Order */}
+        <Section id="data-order" title="6. Data Entry Order & Dependencies">
+          <p>Data must be entered in a specific order due to relational dependencies:</p>
+          <ol className="list-decimal list-inside ml-2 space-y-1.5">
+            <li><strong>Cars</strong> — Add car models first (no dependencies)</li>
+            <li><strong>Variants</strong> — Requires a parent car to exist</li>
+            <li><strong>Features</strong> — Add to the feature catalog (no dependencies)</li>
+            <li><strong>Variant Features</strong> — Requires both a variant and a feature to exist</li>
+            <li><strong>City Pricing</strong> — Requires a variant to exist</li>
+            <li><strong>Depreciation Models</strong> — Requires a car to exist</li>
+          </ol>
+          <Warning>Adding data out of order will result in errors. For example, you cannot add city pricing before the variant exists.</Warning>
         </Section>
 
         {/* 7. Security */}
         <Section id="security" title="7. Security & Roles">
           <h3 className="font-semibold text-lg mt-4 mb-2">Role-Based Access</h3>
-          <p>TrimWise uses a separate <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">user_roles</code> table with two roles:</p>
+          <p>TrimWise uses two roles:</p>
           <ul className="list-disc list-inside ml-2 space-y-1">
-            <li><strong>user</strong> — Default role. Can browse cars, compare variants, use intelligence features, manage shortlist.</li>
-            <li><strong>admin</strong> — Full access to admin panel, data management, CSV uploads, and version history.</li>
+            <li><strong>user</strong> — Default role. Can browse cars, compare variants, use intelligence features, and manage their shortlist.</li>
+            <li><strong>admin</strong> — Full access to admin panel, data management, CSV uploads, and version history. Auto-redirected to admin panel on login.</li>
           </ul>
 
-          <h3 className="font-semibold text-lg mt-4 mb-2">Row-Level Security (RLS)</h3>
-          <p>All database tables have RLS policies ensuring:</p>
+          <h3 className="font-semibold text-lg mt-4 mb-2">Row-Level Security</h3>
+          <p>All database tables have security policies ensuring:</p>
           <ul className="list-disc list-inside ml-2 space-y-1">
-            <li>Users can only read car/variant/feature data (public read access)</li>
+            <li>Car, variant, feature, and pricing data is publicly readable</li>
             <li>Users can only manage their own profiles and shortlists</li>
-            <li>Only admins can insert, update, or delete data in core tables</li>
-            <li>Admin role checks use a <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs">has_role()</code> security definer function to prevent RLS recursion</li>
+            <li>Only admins can insert, update, or delete core data tables</li>
           </ul>
 
-          <Warning>Never grant admin access via client-side checks or hardcoded credentials. Admin status must always be verified server-side through the user_roles table.</Warning>
+          <Warning>Never grant admin access via client-side checks. Admin status is always verified server-side.</Warning>
         </Section>
 
         {/* 8. Best Practices */}
         <Section id="best-practices" title="8. Best Practices">
           <ul className="list-disc list-inside ml-2 space-y-2">
-            <li><strong>Add cars before variants</strong> — Variants require a parent car. Always create the car record first.</li>
-            <li><strong>Add features before linking</strong> — The variant-features form requires both a variant and a feature to exist.</li>
-            <li><strong>Validate depreciation curves</strong> — Ensure Y1 &lt; Y3 &lt; Y5 &lt; Y8 for realistic depreciation modelling.</li>
-            <li><strong>Use forms for small updates, CSV for bulk</strong> — Forms are ideal for adding 1–5 records; CSV is better for 10+ records.</li>
-            <li><strong>Check version history after uploads</strong> — Verify the row counts match your expectations.</li>
+            <li><strong>Follow the data entry order</strong> — Cars → Variants → Features → Variant Features → City Pricing → Depreciation.</li>
+            <li><strong>Use verified sources</strong> — Official brand websites, Team-BHP, and Autocar India for specs. CarWale and Cars24 for depreciation trends.</li>
+            <li><strong>Calculate incremental costs accurately</strong> — Compare consecutive variant prices to determine what each feature costs on that specific model.</li>
+            <li><strong>Validate depreciation curves</strong> — Ensure Y1 &lt; Y3 &lt; Y5 &lt; Y8 for realistic modelling.</li>
+            <li><strong>Use forms for small updates, CSV for bulk</strong> — Forms are ideal for 1–5 records; CSV is better for 10+ records.</li>
             <li><strong>Keep city pricing current</strong> — Road tax and registration costs change frequently. Update at least quarterly.</li>
-            <li><strong>Test with the user view</strong> — After adding data, browse the app as a regular user to verify scores and comparisons look correct.</li>
+            <li><strong>Test after adding data</strong> — Use "Back to App" to browse as a regular user and verify scores and comparisons look correct.</li>
           </ul>
         </Section>
 
         <footer className="mt-16 pt-6 border-t border-gray-200 text-center text-sm text-gray-400 print:mt-8">
-          <p>TrimWise Admin Manual · v1.0 · © 2026 TrimWise. All rights reserved.</p>
+          <p>TrimWise Admin Manual · v2.0 · © 2026 TrimWise. All rights reserved.</p>
         </footer>
       </article>
     </div>
