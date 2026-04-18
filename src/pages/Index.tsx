@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useUserRole } from '@/hooks/use-user-role';
 import { useUserProfile } from '@/hooks/use-user-profile';
-import SplashScreen from '@/components/SplashScreen';
 import OnboardingFlow from '@/components/OnboardingFlow';
 import CarGrid from '@/components/CarGrid';
 import VariantComparison from '@/components/VariantComparison';
@@ -13,14 +12,14 @@ import { Button } from '@/components/ui/button';
 import { LogOut, User, RotateCcw, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type View = 'splash' | 'onboarding' | 'cars' | 'variants' | 'deepdive';
+type View = 'cars' | 'onboarding' | 'variants' | 'deepdive';
 
 const Index = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, signOut } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const { profile: savedProfile, isLoading: profileLoading, saveProfile } = useUserProfile();
-  const [view, setView] = useState<View>('splash');
+  const [view, setView] = useState<View>('cars');
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [selectedCarId, setSelectedCarId] = useState<string>('');
   const [selectedVariantId, setSelectedVariantId] = useState<string>('');
@@ -33,13 +32,12 @@ const Index = () => {
     }
   }, [roleLoading, isAdmin, navigate]);
 
-  // When user is logged in and profile loads, pre-load profile data but don't skip splash
+  // Pre-load saved profile if user has one
   useEffect(() => {
     if (!user || profileLoading || hasCheckedProfile || isAdmin) return;
     setHasCheckedProfile(true);
     if (savedProfile) {
       setOnboardingData(savedProfile);
-      // Don't auto-navigate — let user see splash first
     }
   }, [user, profileLoading, savedProfile, hasCheckedProfile, isAdmin]);
 
@@ -75,6 +73,7 @@ const Index = () => {
   };
 
   const profile = onboardingData ?? defaultProfile;
+  const isPersonalized = onboardingData !== null;
 
   if (authLoading || roleLoading || (user && profileLoading && !hasCheckedProfile)) {
     return (
@@ -84,65 +83,66 @@ const Index = () => {
     );
   }
 
-  // If admin, don't render anything (redirect is happening)
-  if (isAdmin) return null;
-
-  // Show auth if not logged in and past splash
-  if (!user && view !== 'splash') {
+  // Auth required
+  if (!user) {
     return <AuthPage />;
   }
+
+  // If admin, don't render anything (redirect is happening)
+  if (isAdmin) return null;
 
   const handleResetPreferences = () => {
     setOnboardingData(null);
     setHasCheckedProfile(false);
+    setView('cars');
+  };
+
+  const handlePersonalize = () => {
     setView('onboarding');
   };
 
-  const UserBar = () => {
-    if (!user || view === 'splash') return null;
-    return (
-      <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
-        {view !== 'onboarding' && (
-          <>
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => navigate('/shortlist')}>
-              <Heart className="w-3.5 h-3.5" />
-            </Button>
+  const UserBar = () => (
+    <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
+      {view !== 'onboarding' && (
+        <>
+          <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => navigate('/shortlist')}>
+            <Heart className="w-3.5 h-3.5" />
+          </Button>
+          {isPersonalized && (
             <Button variant="outline" size="sm" className="h-8 rounded-full text-xs" onClick={handleResetPreferences}>
               <RotateCcw className="w-3.5 h-3.5 mr-1" />
               Reset
             </Button>
-          </>
-        )}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs text-muted-foreground">
-          <User className="w-3.5 h-3.5" />
-          <span className="max-w-[120px] truncate">{user.email}</span>
-        </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => signOut()}>
-          <LogOut className="w-3.5 h-3.5" />
-        </Button>
+          )}
+        </>
+      )}
+      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border text-xs text-muted-foreground">
+        <User className="w-3.5 h-3.5" />
+        <span className="max-w-[120px] truncate">{user.email}</span>
       </div>
-    );
-  };
+      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" onClick={() => signOut()}>
+        <LogOut className="w-3.5 h-3.5" />
+      </Button>
+    </div>
+  );
 
   const renderView = () => {
     switch (view) {
-      case 'splash':
-        return <SplashScreen onGetStarted={() => {
-          if (onboardingData) {
-            setView('cars');
-          } else {
-            setView('onboarding');
-          }
-        }} />;
       case 'onboarding':
         return (
           <OnboardingFlow
             onComplete={handleOnboardingComplete}
-            onBack={() => setView('splash')}
+            onBack={() => setView('cars')}
           />
         );
       case 'cars':
-        return <CarGrid onSelectCar={handleSelectCar} />;
+        return (
+          <CarGrid
+            onSelectCar={handleSelectCar}
+            isPersonalized={isPersonalized}
+            onPersonalize={handlePersonalize}
+          />
+        );
       case 'variants':
         return (
           <VariantComparison
@@ -150,6 +150,8 @@ const Index = () => {
             onBack={() => setView('cars')}
             onSelectVariant={handleSelectVariant}
             profile={profile}
+            isPersonalized={isPersonalized}
+            onPersonalize={handlePersonalize}
           />
         );
       case 'deepdive':
@@ -159,10 +161,12 @@ const Index = () => {
             variantId={selectedVariantId}
             onBack={() => setView('variants')}
             profile={profile}
+            isPersonalized={isPersonalized}
+            onPersonalize={handlePersonalize}
           />
         );
       default:
-        return <SplashScreen onGetStarted={() => setView('onboarding')} />;
+        return <CarGrid onSelectCar={handleSelectCar} isPersonalized={isPersonalized} onPersonalize={handlePersonalize} />;
     }
   };
 
