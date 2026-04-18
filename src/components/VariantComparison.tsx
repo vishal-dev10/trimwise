@@ -21,6 +21,8 @@ interface VariantComparisonProps {
   onBack: () => void;
   onSelectVariant: (variantId: string) => void;
   profile: OnboardingData;
+  isPersonalized?: boolean;
+  onPersonalize?: () => void;
 }
 
 // Sub-component for a single variant card that fetches its own features
