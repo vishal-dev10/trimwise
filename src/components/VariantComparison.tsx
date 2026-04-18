@@ -257,6 +257,23 @@ const VariantComparison = ({ carId, onBack, onSelectVariant, profile, isPersonal
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+        {/* Personalize prompt */}
+        {!isPersonalized && onPersonalize && !showComparison && (
+          <div className="mb-4">
+            <button
+              onClick={onPersonalize}
+              className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl bg-primary/5 border border-primary/20 hover:bg-primary/10 transition-colors text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Star className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm font-medium text-foreground">
+                  These scores are generic. Personalize for YOUR usage →
+                </span>
+              </div>
+            </button>
+          </div>
+        )}
+
         {/* Compare mode instructions */}
         <AnimatePresence>
           {compareMode && !showComparison && (
