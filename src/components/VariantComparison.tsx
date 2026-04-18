@@ -191,7 +191,7 @@ const VariantCard = ({
   );
 };
 
-const VariantComparison = ({ carId, onBack, onSelectVariant, profile }: VariantComparisonProps) => {
+const VariantComparison = ({ carId, onBack, onSelectVariant, profile, isPersonalized = true, onPersonalize }: VariantComparisonProps) => {
   const { data: cars } = useCars();
   const { data: variants, isLoading } = useCarVariants(carId);
   const { data: depreciation } = useDepreciation(carId);
