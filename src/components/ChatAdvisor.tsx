@@ -33,11 +33,18 @@ interface ChatAdvisorProps {
   featureCount?: number;
 }
 
-const QUICK_QUESTIONS = [
-  'Is this variant worth the price?',
-  'How are the maintenance costs?',
-  'Is this good for city driving?',
-  'Should I consider a higher trim?',
+const GENERIC_QUESTIONS = [
+  'Which car is best for city driving under ₹15L?',
+  'Petrol or diesel for 30km/day?',
+  'How do I pick the right trim?',
+  'Is a sunroof actually worth it?',
+];
+
+const VARIANT_QUESTIONS = (variantName?: string) => [
+  `Is ${variantName ?? 'this trim'} worth the price?`,
+  'Should I pick a higher trim instead?',
+  'What features will I regret skipping?',
+  'How much will this cost over 5 years?',
 ];
 
 const ChatAdvisor = ({ variant, car, profile, trimScore, stressLevel, featureCount }: ChatAdvisorProps) => {
