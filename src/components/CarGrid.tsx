@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
-import { Search, Filter, Car, Fuel, Settings2 } from 'lucide-react';
+import { Search, Car, Fuel, Settings2, Sparkles, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useCars } from '@/hooks/use-cars';
-import { formatPrice } from '@/lib/mock-data';
 import { Skeleton } from '@/components/ui/skeleton';
+import PersonalizePrompt from '@/components/PersonalizePrompt';
 
 import hyundaiCreta from '@/assets/hyundai-creta.jpg';
 import tataNexon from '@/assets/tata-nexon.jpg';
@@ -21,9 +21,11 @@ const carImageMap: Record<string, string> = {
 
 interface CarGridProps {
   onSelectCar: (carId: string) => void;
+  isPersonalized?: boolean;
+  onPersonalize?: () => void;
 }
 
-const CarGrid = ({ onSelectCar }: CarGridProps) => {
+const CarGrid = ({ onSelectCar, isPersonalized = false, onPersonalize }: CarGridProps) => {
   const [search, setSearch] = useState('');
   const { data: cars, isLoading } = useCars();
 
@@ -40,8 +42,13 @@ const CarGrid = ({ onSelectCar }: CarGridProps) => {
       {/* Header */}
       <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-foreground mb-1">Choose Your Car</h1>
-          <p className="text-sm text-muted-foreground mb-4">Select a car to explore variants and features</p>
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+              <Car className="w-4 h-4 text-primary-foreground" />
+            </div>
+            <h1 className="text-2xl font-display font-bold text-foreground">TrimWise</h1>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">Pick a car. We'll decode the trims.</p>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -55,7 +62,19 @@ const CarGrid = ({ onSelectCar }: CarGridProps) => {
       </div>
 
       {/* Grid */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
+      <div className="max-w-4xl mx-auto px-4 py-6 space-y-5">
+        {/* Personalize prompt */}
+        {!isPersonalized && onPersonalize && (
+          <PersonalizePrompt onPersonalize={onPersonalize} />
+        )}
+
+        {isPersonalized && (
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-chart-positive/5 border border-chart-positive/20">
+            <Sparkles className="w-3.5 h-3.5 text-chart-positive" />
+            <span className="text-xs text-foreground">Recommendations are personalized to your profile</span>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {[1,2,3,4].map(i => (
