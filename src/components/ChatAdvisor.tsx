@@ -158,8 +158,10 @@ const ChatAdvisor = ({ variant, car, profile, trimScore, stressLevel, featureCou
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Quick questions</p>
-                      {QUICK_QUESTIONS.map(q => (
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                        {variant ? 'Try asking' : 'Quick questions'}
+                      </p>
+                      {(variant ? VARIANT_QUESTIONS(variant.name) : GENERIC_QUESTIONS).map(q => (
                         <button
                           key={q}
                           onClick={() => send(q)}
